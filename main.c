@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "assembler.h"
+#include "vec.h"
 
 #define MIN_FILENAME_LEN 4
 #define FILE_EXT ".ro"
@@ -91,11 +91,18 @@ char *read_source_file(const char *name) {
 }
 
 int main() {
-    char *source_file_content = read_source_file("x.ro");
+    // char *source_file_content = read_source_file("x.ro");
+    //
+    // tokenize(source_file_content);
+    //
+    // free(source_file_content);
 
-    tokenize(source_file_content);
+    vec *v = new_vec(int);
 
-    free(source_file_content);
+    vec_add(v, int, 0);
+    vec_add(v, int, 1);
+
+    vec_print(v, int , "%d");
 
     return 0;
 }
