@@ -16,12 +16,14 @@
 
 #define vec_print(v, type, format) { \
     printf("["); \
-    for (size_t i = 0; i < v->len - 1; i++) { \
-        printf(format, ((type*) v->buffer)[i]); \
-        printf(", "); \
-    } \
     if (v->len > 0) { \
-        printf(format, ((type*) v->buffer)[v->len - 1]); \
+        for (size_t i = 0; i < v->len - 1; i++) { \
+            printf(format, ((type*) v->buffer)[i]); \
+            printf(", "); \
+        } \
+        if (v->len > 0) { \
+            printf(format, ((type*) v->buffer)[v->len - 1]); \
+        } \
     } \
     printf("]\n"); \
 }

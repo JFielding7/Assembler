@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     vec_print(tokenv, char*, "%s");
 
     free_vec_and_elements(source_code_files);
-    vec_free(tokenv);
+    free_vec_and_elements(tokenv);
 
     return 0;
 }

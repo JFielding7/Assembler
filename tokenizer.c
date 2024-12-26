@@ -4,14 +4,18 @@
 #include <string.h>
 #include "tokenizer.h"
 
-#define TOKEN_REGEX "[-+*/%|&~^()=]|\\w+"
-
 int tokenize(regex_t *regex, regmatch_t* match, char *source_code_cursor, vec *tokenv) {
     while (regexec(regex, source_code_cursor, 1, match, 0) == 0) {
-        source_code_cursor[match->rm_eo] = '\0';
         source_code_cursor += match->rm_so;
-        vec_add(tokenv, char*, source_code_cursor);
-        source_code_cursor += match->rm_eo + 1;
+
+        size_t token_len = match->rm_eo - match->rm_so;
+        char* token = malloc(token_len + 1);
+        strncpy(token, source_code_cursor, token_len);
+        token[token_len] = '\0';
+        printf("%s %lu\n", token, token_len);
+
+        vec_add(tokenv, char*, token);
+        source_code_cursor += token_len;
     }
 
     return 0;
@@ -26,7 +30,7 @@ vec *tokenize_source_code_files(vec *files) {
     regex_t regex;
     regmatch_t match[1];
 
-    const int ret = regcomp(&regex, TOKEN_REGEX, REG_EXTENDED);
+    const int ret = regcomp(&regex, TOKEN_REGEX, TOKEN_REGEX_FLAGS);
     if (ret != 0) {
         perror("Failed to compile token regex\n");
         return NULL;
@@ -42,4 +46,3 @@ vec *tokenize_source_code_files(vec *files) {
 
     return tokenv;
 }
-
