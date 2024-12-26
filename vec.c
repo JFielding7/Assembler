@@ -37,3 +37,11 @@ void vec_free(vec *v) {
     free(v);
 }
 
+void free_vec_and_elements(vec *v) {
+    for (size_t i = 0; i < v->len; i++) {
+        free(*(char**)(v->buffer + i * v->element_size));
+    }
+
+    vec_free(v);
+}
+

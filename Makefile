@@ -1,8 +1,8 @@
-all main.c tokenizer.c assembler.h:
-	gcc main.c tokenizer.c -o assembler
+all *.c *.h:
+	gcc *.c -o assembler
 
 run:
-	gcc main.c tokenizer.c vec.c -o assembler
+	gcc *.c -o assembler
 	./assembler
 
 clean:

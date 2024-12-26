@@ -11,7 +11,7 @@
 
 #define vec_add(v, type, e) { \
     type element##__COUNTER__ = e; \
-    vec_append((v), &element##__COUNTER__); \
+    vec_append(v, &element##__COUNTER__); \
 }
 
 #define vec_print(v, type, format) { \
@@ -38,5 +38,7 @@ vec *vec_alloc(size_t element_size);
 void vec_append(vec *v, void *element);
 
 void vec_free(vec *v);
+
+void free_vec_and_elements(vec *v);
 
 #endif //VEC_H
