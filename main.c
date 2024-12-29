@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     vec *tokenv = tokenize_source_code_files(argv + 1);
     vec_print(tokenv, char*, "%s");
 
-    free_vec_and_elements(tokenv);
+    vec_free_all(tokenv);
 
     return 0;
 }

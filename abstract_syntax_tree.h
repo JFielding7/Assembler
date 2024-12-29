@@ -3,6 +3,12 @@
 
 #include "vec.h"
 
+#define OPERATOR_PRECEDENCE { \
+    "=", NULL, \
+    "+", "-", NULL, \
+    "*", "/", NULL  \
+}
+
 typedef struct ast_node_s {
     unsigned char node_type;
     void *node;

@@ -117,11 +117,11 @@ vec *tokenize_source_code_files(char **filenames) {
         return NULL;
     }
 
-    vec *tokenv = new_vec(char*);
+    vec *tokenv = vec_new(char*);
     for (char **source_file = filenames; *source_file != NULL; source_file++) {
         char *source_file_content = read_source_file(*source_file);
         if (source_file_content == NULL) {
-            free_vec_and_elements(tokenv);
+            vec_free_all(tokenv);
             regfree(&regex);
             return NULL;
         }

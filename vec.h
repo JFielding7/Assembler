@@ -5,9 +5,14 @@
 
 #define INITIAL_CAPACITY 16
 
-#define new_vec(type) (vec_alloc(sizeof(type)))
+#define vec_new(type) (vec_alloc(sizeof(type)))
 
 #define vec_get(v, type, i) (((type*) (v->buffer))[i])
+
+#define vec_set(v, type, i, e) { \
+    type element##__COUNTER__ = e; \
+    vec_set_element(v, i, &element##__COUNTER__); \
+}
 
 #define vec_add(v, type, e) { \
     type element##__COUNTER__ = e; \
@@ -37,10 +42,12 @@ typedef struct vec_s {
 
 vec *vec_alloc(size_t element_size);
 
+void vec_set_element(vec *v, size_t i, void *element);
+
 void vec_append(vec *v, void *element);
 
 void vec_free(vec *v);
 
-void free_vec_and_elements(vec *v);
+void vec_free_all(vec *v);
 
 #endif //VEC_H

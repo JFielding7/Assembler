@@ -1,6 +1,5 @@
 #include "vec.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 vec *vec_alloc(size_t element_size) {
     vec *v = malloc(sizeof(vec));
@@ -11,24 +10,27 @@ vec *vec_alloc(size_t element_size) {
     return v;
 }
 
-void resize(vec *v) {
+void vec_double_capacity(vec *v) {
     v->capacity <<= 1;
     v->buffer = realloc(v->buffer, v->capacity * v->element_size);
 }
 
-void vec_append(vec *v, void *element) {
-    if (v->len == v->capacity) {
-        resize(v);
-    }
-
+void vec_set_element(vec *v, size_t i, void *element) {
     unsigned char *curr_element_byte = element;
-    unsigned char *curr_byte = v->buffer + v->len * v->element_size;
+    unsigned char *curr_byte = v->buffer + i * v->element_size;
     const unsigned char *end_byte = curr_byte + v->element_size;
 
     while (curr_byte < end_byte) {
         *curr_byte++ = *curr_element_byte++;
     }
+}
 
+void vec_append(vec *v, void *element) {
+    if (v->len == v->capacity) {
+        vec_double_capacity(v);
+    }
+
+    vec_set_element(v, v->len, element);
     v->len++;
 }
 
@@ -37,7 +39,7 @@ void vec_free(vec *v) {
     free(v);
 }
 
-void free_vec_and_elements(vec *v) {
+void vec_free_all(vec *v) {
     for (size_t i = 0; i < v->len; i++) {
         free(*(char**)(v->buffer + i * v->element_size));
     }
