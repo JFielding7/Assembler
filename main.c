@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     // vec_free_all(tokenv);
 
     hash_table *ht = hash_table_new(str_hash, str_cmp);
-    char *str = "abcdefghijklmnopqrstuvwxyz";
+    char *str = "abcdefghijklmn";
     //
     for (char *c = str; *c != '\0'; c++) {
         char *l = malloc(2);
@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
     }
 
     hash_table_print(ht, "%s");
+    printf("%lu\n", ht->len);
 
     hash_table_free(ht);
 

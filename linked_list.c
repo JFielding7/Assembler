@@ -23,11 +23,11 @@ void linked_list_node_push_back(linked_list *list, node *n) {
     }
 }
 
-// void linked_list_push_back(linked_list *list, void *value) {
-//     node *n = malloc(sizeof(node));
-//     n->value = value;
-//     linked_list_node_push_back(list, n);
-// }
+void linked_list_push_back(linked_list *list, void *value) {
+    node *n = malloc(sizeof(node));
+    n->value = value;
+    linked_list_node_push_back(list, n);
+}
 
 bool linked_list_contains(linked_list *list, void *value, int (*cmp)(void*, void*)) {
     if (list == NULL) {

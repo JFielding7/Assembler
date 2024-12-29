@@ -1,11 +1,10 @@
-#include <stdio.h>
-
-
 #include "hashtable.h"
-
+#include "linked_list.h"
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "linked_list.h"
+#define RESIZE_THRESHOLD_NUMER_SHIFT 2
+#define RESIZE_THRESHOLD_DENOM 3
 
 hash_table *hash_table_alloc(size_t (*hash_func)(void *), int (*cmp)(void*, void*)) {
     hash_table *ht = malloc(sizeof(hash_table));
@@ -18,20 +17,14 @@ hash_table *hash_table_alloc(size_t (*hash_func)(void *), int (*cmp)(void*, void
 
 linked_list *get_bucket(hash_table *ht, void *value, size_t *bucket_index) {
     *bucket_index = ht->hash_func(value) & ht->ht->capacity - 1;
-    return vec_get(ht->ht, linked_list*, *bucket_index);
-}
 
-void insert(hash_table *ht, node *n) {
-    size_t bucket_index;
-    linked_list *bucket = get_bucket(ht, n->value, &bucket_index);
-
+    linked_list *bucket = vec_get(ht->ht, linked_list*, *bucket_index);
     if (bucket == NULL) {
         bucket = linked_list_new();
-        vec_set(ht->ht, linked_list*, bucket_index, bucket);
+        vec_set(ht->ht, linked_list*, *bucket_index, bucket);
     }
 
-    linked_list_node_push_back(bucket, n);
-    ht->len++;
+    return bucket;
 }
 
 void rehash_elements(hash_table *ht, linked_list *bucket) {
@@ -41,14 +34,17 @@ void rehash_elements(hash_table *ht, linked_list *bucket) {
 
     node *curr = bucket->head;
     while (curr != NULL) {
-        insert(ht, curr);
+        size_t bucket_index;
+        linked_list *new_bucket = get_bucket(ht, curr->value, &bucket_index);
+        linked_list_node_push_back(new_bucket, curr);
+
         curr = curr->next;
     }
 
     free(bucket);
 }
 
-void hash_table_double_capacity(hash_table *ht) {
+void double_capacity(hash_table *ht) {
     vec *old_ht = ht->ht;
     size_t capacity = old_ht->capacity;
     ht->ht = vec_fill_zero(linked_list*, capacity << 1);
@@ -60,14 +56,24 @@ void hash_table_double_capacity(hash_table *ht) {
     vec_free(old_ht);
 }
 
+bool meets_resize_threshold(hash_table *ht) {
+    return (ht->len << RESIZE_THRESHOLD_NUMER_SHIFT) / RESIZE_THRESHOLD_DENOM > ht->ht->capacity;
+}
+
 void hash_table_insert(hash_table *ht, void *value) {
-    if (ht->len << 1 > ht->ht->capacity) {
-        hash_table_double_capacity(ht);
+    if (meets_resize_threshold(ht)) {
+        double_capacity(ht);
     }
 
-    node *n = malloc(sizeof(node));
-    n->value = value;
-    insert(ht, n);
+    size_t bucket_index;
+    linked_list *bucket = get_bucket(ht, value, &bucket_index);
+
+    if (linked_list_contains(bucket, value, ht->cmp)) {
+        return;
+    }
+
+    linked_list_push_back(bucket, value);
+    ht->len++;
 }
 
 bool hash_table_contains(hash_table *ht, void *value) {
