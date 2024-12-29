@@ -44,4 +44,3 @@ void free_vec_and_elements(vec *v) {
 
     vec_free(v);
 }
-
