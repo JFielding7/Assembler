@@ -1,5 +1,6 @@
 #include "linked_list.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,10 +17,10 @@ void linked_list_node_push_back(linked_list *list, node *n) {
     if (list->head == NULL) {
         list->head = n;
         list->tail = n;
+    } else {
+        list->tail->next = n;
+        list->tail = n;
     }
-
-    list->tail->next = n;
-    list->tail = n;
 }
 
 void linked_list_push_back(linked_list *list, void *value) {
@@ -43,6 +44,15 @@ bool linked_list_contains(linked_list *list, void *value, int (*cmp)(void*, void
     }
 
     return false;
+}
+
+void linked_list_print(linked_list *list, char *format) {
+    node *curr = list->head;
+    while (curr != NULL) {
+        printf(format, curr->value);
+        printf("\n");
+        curr = curr->next;
+    }
 }
 
 void linked_list_free(linked_list *list) {

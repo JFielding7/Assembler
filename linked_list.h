@@ -20,4 +20,6 @@ void linked_list_push_back(linked_list *list, void *value);
 
 bool linked_list_contains(linked_list *list, void *value, int (*cmp)(void*, void*));
 
+void linked_list_print(linked_list *list, char *format);
+
 #endif //LINKED_LIST_H
