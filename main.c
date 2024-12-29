@@ -20,13 +20,21 @@ int main(int argc, char *argv[]) {
     //
     // vec_free_all(tokenv);
 
-    hash_table *ht = hash_table_new(char*, str_hash, str_cmp);
-    hash_table_insert(ht, "hello");
-    hash_table_insert(ht, "dk won");
+    hash_table *ht = hash_table_new(str_hash, str_cmp);
+    char *str = "abcdefghijklmnopqrstuvwxyz";
+    //
+    for (char *c = str; *c != '\0'; c++) {
+        char *l = malloc(2);
+        l[0] = *c;
+        l[1] = '\0';
+        hash_table_insert(ht, l);
+    }
 
     hash_table_print(ht, "%s");
 
-    printf("%d", hash_table_contains(ht, "dk won"));
+    hash_table_free(ht);
+
+    // printf("%d", hash_table_contains(ht, "dk won"));
 
     return 0;
 }

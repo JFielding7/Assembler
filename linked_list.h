@@ -22,4 +22,6 @@ bool linked_list_contains(linked_list *list, void *value, int (*cmp)(void*, void
 
 void linked_list_print(linked_list *list, char *format);
 
+void linked_list_free(linked_list *list);
+
 #endif //LINKED_LIST_H
