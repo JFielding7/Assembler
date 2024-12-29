@@ -4,6 +4,7 @@
 #include "vec.h"
 
 typedef struct hashtable_s {
+  size_t len;
   vec *ht;
   size_t (*hash_func)(void *);
 } hash_table;

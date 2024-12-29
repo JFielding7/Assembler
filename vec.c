@@ -10,6 +10,15 @@ vec *vec_alloc(size_t element_size) {
     return v;
 }
 
+vec *vec_zero(size_t len, size_t element_size) {
+    vec *v = malloc(sizeof(vec));
+    v->buffer = calloc(len, element_size);
+    v->capacity = len;
+    v->element_size = element_size;
+    v->len = len;
+    return v;
+}
+
 void vec_double_capacity(vec *v) {
     v->capacity <<= 1;
     v->buffer = realloc(v->buffer, v->capacity * v->element_size);

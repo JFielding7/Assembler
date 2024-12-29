@@ -10,9 +10,7 @@ linked_list *linked_list_new() {
     return list;
 }
 
-void linked_list_push_back(linked_list *list, void *value) {
-    node *n = malloc(sizeof(node));
-    n->value = value;
+void linked_list_node_push_back(linked_list *list, node *n) {
     n->next = NULL;
 
     if (list->head == NULL) {
@@ -24,7 +22,17 @@ void linked_list_push_back(linked_list *list, void *value) {
     list->tail = n;
 }
 
+void linked_list_push_back(linked_list *list, void *value) {
+    node *n = malloc(sizeof(node));
+    n->value = value;
+    linked_list_node_push_back(list, n);
+}
+
 bool linked_list_contains(linked_list *list, void *value, int (*cmp)(void*, void*)) {
+    if (list == NULL) {
+        return false;
+    }
+
     node *curr = list->head;
     while (curr != NULL) {
         if (cmp(value, curr->value) == 0) {
@@ -37,4 +45,13 @@ bool linked_list_contains(linked_list *list, void *value, int (*cmp)(void*, void
     return false;
 }
 
+void linked_list_free(linked_list *list) {
+    node *curr = list->head;
+    while (curr != NULL ) {
+        node *next = curr->next;
+        free(curr);
+        curr = next;
+    }
 
+    free(list);
+}

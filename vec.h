@@ -7,6 +7,8 @@
 
 #define vec_new(type) (vec_alloc(sizeof(type)))
 
+#define vec_fill_zero(type, len) (vec_zero(len, sizeof(type)))
+
 #define vec_get(v, type, i) (((type*) (v->buffer))[i])
 
 #define vec_set(v, type, i, e) { \
@@ -41,6 +43,10 @@ typedef struct vec_s {
 } vec;
 
 vec *vec_alloc(size_t element_size);
+
+vec *vec_zero(size_t capacity, size_t element_size);
+
+void vec_double_capacity(vec *v);
 
 void vec_set_element(vec *v, size_t i, void *element);
 

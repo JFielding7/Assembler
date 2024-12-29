@@ -14,6 +14,8 @@ typedef struct node_s {
 
 linked_list *linked_list_new();
 
+void linked_list_node_push_back(linked_list *list, node *n);
+
 void linked_list_push_back(linked_list *list, void *value);
 
 bool linked_list_contains(linked_list *list, void *value, int (*cmp)(void*, void*));
