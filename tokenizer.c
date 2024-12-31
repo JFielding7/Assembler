@@ -1,8 +1,35 @@
+#include "tokenizer.h"
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "tokenizer.h"
+
+#define MIN_FILENAME_LEN 4
+#define FILE_EXT ".ro"
+#define TOKEN_REGEX "\n[ \t]*|[-+*/%|&~^()=,]|\\w+|\".*?[^\\\\]\""
+#define VALID_SYMBOL_REGEX "^\\w+$"
+#define TOKEN_REGEX_FLAGS (REG_EXTENDED)
+
+static regex_t token_regex;
+static regex_t valid_symbol_regex;
+
+void compile_regex(regex_t *regex, const char *pattern) {
+    const int ret = regcomp(regex, pattern, TOKEN_REGEX_FLAGS);
+    if (ret != 0) {
+        perror("Failed to compile token regex\n");
+        exit(ret);
+    }
+}
+
+void compile_regexps() {
+    compile_regex(&token_regex, TOKEN_REGEX);
+    compile_regex(&valid_symbol_regex, VALID_SYMBOL_REGEX);
+}
+
+void free_regexps() {
+    regfree(&token_regex);
+    regfree(&valid_symbol_regex);
+}
 
 /**
  * Opens a source code file
@@ -87,6 +114,10 @@ char *read_source_file(const char *name) {
     return buffer;
 }
 
+bool invalid_symbol(char *symbol) {
+    return regexec(&valid_symbol_regex, symbol, 0, NULL, 0) != 0;
+}
+
 int tokenize(regex_t *regex, regmatch_t* match, char *source_code_cursor, vec *tokenv) {
     while (regexec(regex, source_code_cursor, 1, match, 0) == 0) {
         source_code_cursor += match->rm_so;
@@ -104,40 +135,20 @@ int tokenize(regex_t *regex, regmatch_t* match, char *source_code_cursor, vec *t
     return 0;
 }
 
-/**
- *
- * @param files
- * @return
- */
 vec *tokenize_source_code_files(char **filenames) {
-    regex_t regex;
-    const int ret = regcomp(&regex, TOKEN_REGEX, TOKEN_REGEX_FLAGS);
-    if (ret != 0) {
-        perror("Failed to compile token regex\n");
-        return NULL;
-    }
-
     vec *tokenv = vec_new(char*);
     for (char **source_file = filenames; *source_file != NULL; source_file++) {
         char *source_file_content = read_source_file(*source_file);
         if (source_file_content == NULL) {
             vec_free_all(tokenv);
-            regfree(&regex);
             return NULL;
         }
 
-        char *new_line = malloc(2);
-        new_line[0] = '\n';
-        new_line[1] = '\0';
-        vec_add(tokenv, char*, new_line);
-
         regmatch_t match[1];
-        tokenize(&regex, match, source_file_content, tokenv);
+        tokenize(&token_regex, match, source_file_content, tokenv);
 
         free(source_file_content);
     }
-
-    regfree(&regex);
 
     return tokenv;
 }

@@ -9,6 +9,18 @@
     "*", "/", NULL  \
 }
 
+typedef struct line_iterator_s {
+    vec *tokenv;
+    size_t i;
+} line_iterator;
+
+typedef struct line_s {
+    vec *tokenv;
+    size_t start;
+    size_t end;
+    size_t indent;
+} line;
+
 typedef struct ast_node_s {
     unsigned char node_type;
     void *node;
