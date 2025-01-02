@@ -1,46 +1,52 @@
 #include "vec.h"
+
+#include <stdio.h>
 #include <stdlib.h>
 
-vec *vec_alloc(size_t element_size) {
-    vec *v = malloc(sizeof(vec));
-    v->buffer = malloc(INITIAL_CAPACITY * element_size);
-    v->capacity = INITIAL_CAPACITY;
-    v->element_size = element_size;
-    v->len = 0;
-    return v;
-}
+#define ALLOCATION_SHIFT 3
 
-vec *vec_zero(size_t len, size_t element_size) {
+vec *vec_new() {
     vec *v = malloc(sizeof(vec));
-    v->buffer = calloc(len, element_size);
-    v->capacity = len;
-    v->element_size = element_size;
-    v->len = len;
+    v->buffer = malloc(INITIAL_CAPACITY << ALLOCATION_SHIFT);
+    v->capacity = INITIAL_CAPACITY;
+    v->len = 0;
     return v;
 }
 
 void vec_double_capacity(vec *v) {
     v->capacity <<= 1;
-    v->buffer = realloc(v->buffer, v->capacity * v->element_size);
+    v->buffer = realloc(v->buffer, v->capacity << ALLOCATION_SHIFT);
 }
 
-void vec_set_element(vec *v, size_t i, void *element) {
-    unsigned char *curr_element_byte = element;
-    unsigned char *curr_byte = v->buffer + i * v->element_size;
-    const unsigned char *end_byte = curr_byte + v->element_size;
-
-    while (curr_byte < end_byte) {
-        *curr_byte++ = *curr_element_byte++;
-    }
+void vec_set(vec *v, size_t i, void *element) {
+    ((void**) v->buffer)[i] = element;
 }
 
-void vec_append(vec *v, void *element) {
+void vec_push(vec *v, void *element) {
     if (v->len == v->capacity) {
         vec_double_capacity(v);
     }
 
-    vec_set_element(v, v->len, element);
+    vec_set(v, v->len, element);
     v->len++;
+}
+
+bool vec_conatins(vec *v, void *element, int (*cmp)(void*, void*)) {
+    for (size_t i = 0; i < v->len; i++) {
+    }
+}
+
+void vec_str_print(vec *v) {
+    char **strings = v->buffer;
+
+    printf("[");
+    if (v->len > 0) {
+        for (size_t i = 0; i < v->len - 1; i++) {
+            printf("%s, ", strings[i]);
+        }
+        printf("%s", strings[v->len - 1]);
+    }
+    printf("]\n");
 }
 
 void vec_free(vec *v) {
@@ -50,7 +56,7 @@ void vec_free(vec *v) {
 
 void vec_free_all(vec *v) {
     for (size_t i = 0; i < v->len; i++) {
-        free(*(char**)(v->buffer + i * v->element_size));
+        free(*(void**)(v->buffer + (i << ALLOCATION_SHIFT)));
     }
 
     vec_free(v);

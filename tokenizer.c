@@ -118,17 +118,17 @@ bool invalid_symbol(char *symbol) {
     return regexec(&valid_symbol_regex, symbol, 0, NULL, 0) != 0;
 }
 
-int tokenize(regex_t *regex, regmatch_t* match, char *source_code_cursor, vec *tokenv) {
-    while (regexec(regex, source_code_cursor, 1, match, 0) == 0) {
+int tokenize(regmatch_t* match, char *source_code_cursor, vec *tokenv) {
+    while (regexec(&token_regex, source_code_cursor, 1, match, 0) == 0) {
         source_code_cursor += match->rm_so;
 
         size_t token_len = match->rm_eo - match->rm_so;
         char* token = malloc(token_len + 1);
         strncpy(token, source_code_cursor, token_len);
         token[token_len] = '\0';
-        printf("%s %lu\n", token, token_len);
+        // printf("%s %lu\n", token, token_len);
 
-        vec_add(tokenv, char*, token);
+        vec_push(tokenv, token);
         source_code_cursor += token_len;
     }
 
@@ -136,19 +136,19 @@ int tokenize(regex_t *regex, regmatch_t* match, char *source_code_cursor, vec *t
 }
 
 vec *tokenize_source_code_files(char **filenames) {
-    vec *tokenv = vec_new(char*);
+    compile_regexps();
+
+    vec *tokenv = vec_new();
     for (char **source_file = filenames; *source_file != NULL; source_file++) {
         char *source_file_content = read_source_file(*source_file);
-        if (source_file_content == NULL) {
-            vec_free_all(tokenv);
-            return NULL;
-        }
 
         regmatch_t match[1];
-        tokenize(&token_regex, match, source_file_content, tokenv);
+        tokenize(match, source_file_content, tokenv);
 
         free(source_file_content);
     }
+
+    free_regexps();
 
     return tokenv;
 }
