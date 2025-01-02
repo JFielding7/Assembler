@@ -6,31 +6,52 @@
 #include <string.h>
 
 #include "pattern.h"
+#include "types.h"
 #include "util.h"
 
 #define MIN_DEF_LEN 4
 
 #define ASSIGNMENT_TOKEN "="
-#define FUNC_PARAM_START_TOKEN "("
 
-function *create_function_node(vec *tokenv, line *curr_line) {
+#define PARAM_START_TOKEN "("
+#define PARAM_END_TOKEN ")"
+#define PARAM_START 3
+#define PARAM_SEP ","
+#define PARAM_MIN_TOKENS 3
 
+var *create_var_node(vec *tokenv, line *curr_line) {
+    return NULL;
 }
 
+function *create_function_node(vec *tokenv, line *curr_line) {
+    function *func_node = malloc(sizeof(function));
 
+    size_t i = curr_line->start + PARAM_START;
+    while (i < curr_line->end) {
+        char *type = vec_get(tokenv, i++);
+        assert_valid_type(type, curr_line);
+
+        char *param_name = vec_get(tokenv, i++);
+        assert_valid_symbol(param_name, curr_line);
+
+        assert_token_equals(vec_get(tokenv, i++), PARAM_SEP, curr_line);
+
+        vec_push(func_node->params, var_new(type, param_name));
+    }
+
+    return func_node;
+}
 
 ast_node *symbol_definition(vec *tokenv, line *curr_line) {
     char *symbol = vec_get(tokenv, curr_line->start + 1);
-    if (!valid_symbol(symbol)) {
-        raise_compiler_error("Invalid symbol `%s`", curr_line->line_num, symbol);
-    }
+    assert_valid_symbol(symbol, curr_line);
 
     ast_node *node = malloc(sizeof(ast_node));
 
     char *token = vec_get(tokenv, curr_line->start + 2);
     if (strcmp(token, ASSIGNMENT_TOKEN) == 0) {
-
-    } else if (strcmp(token, FUNC_PARAM_START_TOKEN) == 0) {
+        // TODO
+    } else if (strcmp(token, PARAM_START_TOKEN) == 0) {
         create_function_node(tokenv, curr_line);
     } else {
         raise_compiler_error("Invalid Definition", curr_line->line_num);

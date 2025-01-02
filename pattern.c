@@ -12,8 +12,6 @@
 static regex_t token_regex;
 static regex_t symbol_regex;
 
-static vec *types;
-
 void compile_regex(regex_t *regex, const char *pattern) {
     const int ret = regcomp(regex, pattern, REG_EXTENDED);
     if (ret != 0) {
@@ -38,14 +36,4 @@ bool next_token(char *token, regmatch_t *match) {
 
 bool valid_symbol(char *symbol) {
     return regexec(&symbol_regex, symbol, 0, NULL, 0) == 0;
-}
-
-bool valid_type(char *type) {
-    vec_iter(char *curr, types, {
-        if (strcmp(type, curr) == 0) {
-            return true;
-        }
-    })
-
-    return false;
 }

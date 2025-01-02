@@ -5,7 +5,28 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "pattern.h"
+#include "types.h"
+
 #define ERROR_LINE_MESSAGE "ERROR: line %lu: "
+
+void assert_valid_type(char *type, line *curr_line) {
+    if (!valid_type(type)) {
+        raise_compiler_error("Invalid type `%s`", curr_line->line_num, type);
+    }
+}
+
+void assert_valid_symbol(char *symbol, line *curr_line) {
+    if (!valid_symbol(symbol)) {
+        raise_compiler_error("Invalid symbol `%s`", curr_line->line_num, symbol);
+    }
+}
+
+void assert_token_equals(char *token, char *s, line *curr_line) {
+    if (strcmp(token, s) != 0) {
+        raise_compiler_error("Expected `%s`", curr_line->line_num);
+    }
+}
 
 void raise_compiler_error(char *message, ...) {
     va_list args;
