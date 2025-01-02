@@ -4,7 +4,7 @@
 
 #include "tokenizer.h"
 #include "vec.h"
-#include "util.h"
+#include "abstract_syntax_tree.h"
 
 #define MIN_ARG_COUNT 2
 
@@ -15,7 +15,8 @@ int main(int argc, char *argv[]) {
     }
 
     vec *tokenv = tokenize_source_code_files(argv + 1);
-    vec_str_print(tokenv);
+
+    generate_ast(tokenv);
 
     vec_free_all(tokenv);
 

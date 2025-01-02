@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+#define INITIAL_CAPACITY 16
 #define ALLOCATION_SHIFT 3
 
 vec *vec_new() {
@@ -18,8 +20,12 @@ void vec_double_capacity(vec *v) {
     v->buffer = realloc(v->buffer, v->capacity << ALLOCATION_SHIFT);
 }
 
+void *vec_get(vec *v, size_t i) {
+    return v->buffer[i];
+}
+
 void vec_set(vec *v, size_t i, void *element) {
-    ((void**) v->buffer)[i] = element;
+    v->buffer[i] = element;
 }
 
 void vec_push(vec *v, void *element) {
@@ -32,12 +38,16 @@ void vec_push(vec *v, void *element) {
 }
 
 bool vec_conatins(vec *v, void *element, int (*cmp)(void*, void*)) {
-    for (size_t i = 0; i < v->len; i++) {
-    }
+    vec_iter(void *curr, v, {
+        if (cmp(element, curr) == 0)
+            return true;
+    })
+
+    return false;
 }
 
 void vec_str_print(vec *v) {
-    char **strings = v->buffer;
+    char **strings = (char**) v->buffer;
 
     printf("[");
     if (v->len > 0) {
@@ -55,9 +65,6 @@ void vec_free(vec *v) {
 }
 
 void vec_free_all(vec *v) {
-    for (size_t i = 0; i < v->len; i++) {
-        free(*(void**)(v->buffer + (i << ALLOCATION_SHIFT)));
-    }
-
+    vec_iter(void *element, v, free(element))
     vec_free(v);
 }

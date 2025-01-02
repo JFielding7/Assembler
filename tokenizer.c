@@ -126,7 +126,6 @@ int tokenize(regmatch_t* match, char *source_code_cursor, vec *tokenv) {
         char* token = malloc(token_len + 1);
         strncpy(token, source_code_cursor, token_len);
         token[token_len] = '\0';
-        // printf("%s %lu\n", token, token_len);
 
         vec_push(tokenv, token);
         source_code_cursor += token_len;
@@ -141,6 +140,10 @@ vec *tokenize_source_code_files(char **filenames) {
     vec *tokenv = vec_new();
     for (char **source_file = filenames; *source_file != NULL; source_file++) {
         char *source_file_content = read_source_file(*source_file);
+
+        char *new_line = malloc(2);
+        strcpy(new_line, "\n");
+        vec_push(tokenv, new_line);
 
         regmatch_t match[1];
         tokenize(match, source_file_content, tokenv);

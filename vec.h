@@ -4,15 +4,21 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define INITIAL_CAPACITY 16
+#define vec_iter(e, v, closure) \
+for (size_t i = 0; i < v->len; i++) { \
+    e = vec_get(v, i); \
+    closure; \
+}
 
 typedef struct vec_s {
-    void *buffer;
+    void **buffer;
     size_t len;
     size_t capacity;
 } vec;
 
 vec *vec_new();
+
+void *vec_get(vec *v, size_t i);
 
 void vec_set(vec *v, size_t i, void *element);
 
