@@ -5,7 +5,7 @@
 
 #include <stdbool.h>
 
-bool invalid_symbol(char *symbol);
+bool valid_symbol(char *symbol);
 
 vec *tokenize_source_code_files(char **filenames);
 

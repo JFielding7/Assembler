@@ -4,32 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "pattern.h"
+
 #define MIN_FILENAME_LEN 4
 #define FILE_EXT ".ro"
-#define TOKEN_REGEX "\n[ \t]*|[-+*/%|&~^()=,]|\\w+|\".*?[^\\\\]\""
-#define VALID_SYMBOL_REGEX "^\\w+$"
-#define TOKEN_REGEX_FLAGS (REG_EXTENDED)
-
-static regex_t token_regex;
-static regex_t valid_symbol_regex;
-
-void compile_regex(regex_t *regex, const char *pattern) {
-    const int ret = regcomp(regex, pattern, TOKEN_REGEX_FLAGS);
-    if (ret != 0) {
-        perror("Failed to compile token regex\n");
-        exit(ret);
-    }
-}
-
-void compile_regexps() {
-    compile_regex(&token_regex, TOKEN_REGEX);
-    compile_regex(&valid_symbol_regex, VALID_SYMBOL_REGEX);
-}
-
-void free_regexps() {
-    regfree(&token_regex);
-    regfree(&valid_symbol_regex);
-}
 
 /**
  * Opens a source code file
@@ -114,12 +92,8 @@ char *read_source_file(const char *name) {
     return buffer;
 }
 
-bool invalid_symbol(char *symbol) {
-    return regexec(&valid_symbol_regex, symbol, 0, NULL, 0) != 0;
-}
-
 int tokenize(regmatch_t* match, char *source_code_cursor, vec *tokenv) {
-    while (regexec(&token_regex, source_code_cursor, 1, match, 0) == 0) {
+    while (next_token(source_code_cursor, match)) {
         source_code_cursor += match->rm_so;
 
         size_t token_len = match->rm_eo - match->rm_so;

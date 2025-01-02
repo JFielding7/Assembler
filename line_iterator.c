@@ -39,7 +39,7 @@ line *next_line(line_iterator *iter) {
     curr_line->line_num++;
     int indent = get_indent_level(vec_get(tokenv, curr_line->end));
     if (indent == SUSPICIOUS_INDENT) {
-        fprintf(stderr, "ERROR on line %lu: Suspicious indent\n", curr_line->line_num);
+        fprintf(stderr, "ERROR on line %lu: Indent size not a multiple of %d\n", curr_line->line_num, TAB_WIDTH);
         exit(1);
     }
     curr_line->indent = indent;

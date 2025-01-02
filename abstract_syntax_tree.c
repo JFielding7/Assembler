@@ -5,27 +5,49 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "tokenizer.h"
+#include "pattern.h"
+#include "util.h"
 
-#define FUNCTION_DEFINITION "fn"
+#define MIN_DEF_LEN 4
 
-function *create_function_node(vec *tokenv, size_t *token_index, size_t line_num) {
-    *token_index++;
+#define ASSIGNMENT_TOKEN "="
+#define FUNC_PARAM_START_TOKEN "("
 
-    char *function_name = vec_get(tokenv, *token_index);
-    if (invalid_symbol(function_name)) {
-        fprintf(stderr, "ERROR on line %lu: Invalid function name `%s`", line_num, function_name);
-    }
-
+function *create_function_node(vec *tokenv, line *curr_line) {
 
 }
 
-ast_node *create_ast_node(vec *tokenv, size_t *token_index) {
-    char *token = vec_get(tokenv, *token_index);
 
-    if (strcmp(token, FUNCTION_DEFINITION) == 0) {
 
+ast_node *symbol_definition(vec *tokenv, line *curr_line) {
+    char *symbol = vec_get(tokenv, curr_line->start + 1);
+    if (!valid_symbol(symbol)) {
+        raise_compiler_error("Invalid symbol `%s`", curr_line->line_num, symbol);
     }
+
+    ast_node *node = malloc(sizeof(ast_node));
+
+    char *token = vec_get(tokenv, curr_line->start + 2);
+    if (strcmp(token, ASSIGNMENT_TOKEN) == 0) {
+
+    } else if (strcmp(token, FUNC_PARAM_START_TOKEN) == 0) {
+        create_function_node(tokenv, curr_line);
+    } else {
+        raise_compiler_error("Invalid Definition", curr_line->line_num);
+    }
+
+    return node;
+}
+
+ast_node *create_ast_node(vec *tokenv, line *curr_line) {
+    char *token = vec_get(tokenv, curr_line->start);
+    if (valid_type(token)) {
+        if (curr_line->end - curr_line->start < MIN_DEF_LEN) {
+            raise_compiler_error("Incomplete Defintion", curr_line->line_num);
+        }
+        return symbol_definition(tokenv, curr_line);
+    }
+    return NULL;
 }
 
 /**
@@ -37,14 +59,12 @@ ast_node *generate_ast(vec *tokenv) {
     line_iterator iter;
     init_line_iterator(&iter, tokenv);
 
+    int expected_indent = 0;
     line *curr_line = next_line(&iter);
     while (curr_line != NULL) {
-        printf("%lu. %lu.", curr_line->line_num, curr_line->indent);
-        for (size_t i = curr_line->start; i < curr_line->end; i++) {
-            printf("%s ", (char*) vec_get(tokenv, i));
+        if (curr_line->indent != expected_indent) {
+            raise_compiler_error("Unexpected Indent Size", curr_line->line_num);
         }
-        printf("\n");
-
 
         curr_line = next_line(&iter);
     }

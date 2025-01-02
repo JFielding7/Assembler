@@ -1,22 +1,26 @@
 #include "util.h"
-#include <stddef.h>
+
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <stdio.h>
+#define ERROR_LINE_MESSAGE "ERROR: line %lu: "
 
-size_t str_hash(void *str) {
-    unsigned long hash = 0;
-    unsigned long pow = 1;
+void raise_compiler_error(char *message, ...) {
+    va_list args;
+    va_start(args, message);
 
-    // printf("Str: %s\n", (char*) str);
-    for (char *curr = str; *curr != '\0'; curr++) {
-        hash = (hash + *curr * pow) % STR_HASH_MOD;
-        pow = pow * STR_HASH_PRIME_BASE % STR_HASH_MOD;
-    }
+    size_t base_len = strlen(ERROR_LINE_MESSAGE);
+    size_t message_len = strlen(message);
 
-    return hash;
-}
+    char error_message[base_len + message_len + 2];
+    strncpy(error_message, ERROR_LINE_MESSAGE, base_len);
+    strncpy(error_message + base_len, message, message_len);
+    strcpy(error_message + base_len + message_len, "\n");
 
-int str_cmp(void *str0, void *str1) {
-    return strcmp(str0, str1);
+    vfprintf(stderr, error_message, args);
+    va_end(args);
+
+    exit(1);
 }
