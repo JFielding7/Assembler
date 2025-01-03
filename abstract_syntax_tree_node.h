@@ -8,12 +8,6 @@ typedef struct ast_node_s {
     void *node;
 } ast_node;
 
-typedef struct function_s {
-    vec *name_space;
-    vec *params;
-    vec *func_body;
-} function;
-
 typedef struct if_statement_s {
     ast_node *condition;
     vec *if_body;
@@ -43,10 +37,19 @@ typedef struct literal_s {
 
 typedef struct namespace_s {
     vec *vars;
-    vec *functions;
     struct namespace_s *parent;
 } namespace;
 
+typedef struct function_s {
+    char *type;
+    char *name;
+    namespace ns;
+} function_node;
+
 var *var_new(char *type, char *name);
+
+bool var_exists(char *var_name, namespace *ns);
+
+function_node *function_node_new(char *type, char *name);
 
 #endif //ABSTRACT_SYNTAX_TREE_NODE_H

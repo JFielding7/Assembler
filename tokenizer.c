@@ -109,8 +109,6 @@ int tokenize(regmatch_t* match, char *source_code_cursor, vec *tokenv) {
 }
 
 vec *tokenize_source_code_files(char **filenames) {
-    compile_regexps();
-
     vec *tokenv = vec_new();
     for (char **source_file = filenames; *source_file != NULL; source_file++) {
         char *source_file_content = read_source_file(*source_file);
@@ -124,8 +122,6 @@ vec *tokenize_source_code_files(char **filenames) {
 
         free(source_file_content);
     }
-
-    free_regexps();
 
     return tokenv;
 }
