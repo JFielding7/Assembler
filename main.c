@@ -12,7 +12,7 @@
 
 void allocate_resources() {
     compile_regexps();
-    compile_types();
+    compile_native_types();
 }
 
 void deallocate_resources() {
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
     generate_ast(tokenv);
 
-    vec_free_all(tokenv);
+    free_vec_and_elements(tokenv);
 
     deallocate_resources();
 

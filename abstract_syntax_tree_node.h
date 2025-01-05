@@ -4,8 +4,8 @@
 #include "vec.h"
 
 typedef struct ast_node_s {
-    unsigned char node_type;
     void *node;
+    void (*add_child)(struct ast_node_s*, struct ast_node_s*);
 } ast_node;
 
 typedef struct if_statement_s {
@@ -43,6 +43,7 @@ typedef struct namespace_s {
 typedef struct function_s {
     char *type;
     char *name;
+    vec *statements;
     namespace ns;
 } function_node;
 

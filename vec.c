@@ -37,6 +37,10 @@ void vec_push(vec *v, void *element) {
     v->len++;
 }
 
+void *vec_pop(vec *v) {
+    return v->buffer[--v->len];
+}
+
 bool vec_conatins(vec *v, void *element, int (*cmp)(void*, void*)) {
     vec_iter(void *curr, v, {
         if (cmp(element, curr) == 0)
