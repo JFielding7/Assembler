@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "abstract_syntax_tree_node.h"
+#include "ast_node.h"
 #include "line_iterator.h"
 
 void assert_valid_type(char *type, line *curr_line);

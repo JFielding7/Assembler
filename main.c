@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "abstract_syntax_tree.h"
+#include "ast.h"
+#include "ast_node.h"
 #include "pattern.h"
 #include "tokenizer.h"
 #include "types.h"

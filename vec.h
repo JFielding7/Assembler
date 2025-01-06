@@ -30,6 +30,8 @@ void vec_push(vec *v, void *element);
 
 void *vec_pop(vec *v);
 
+void *vec_peek_end(vec *v);
+
 bool vec_conatins(vec *v, void *element, int (*cmp)(void*, void*));
 
 void vec_str_print(vec *v);

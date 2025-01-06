@@ -41,6 +41,10 @@ void *vec_pop(vec *v) {
     return v->buffer[--v->len];
 }
 
+void *vec_peek_end(vec *v) {
+    return v->buffer[v->len - 1];
+}
+
 bool vec_conatins(vec *v, void *element, int (*cmp)(void*, void*)) {
     vec_iter(void *curr, v, {
         if (cmp(element, curr) == 0)
@@ -68,7 +72,7 @@ void vec_free(vec *v) {
     free(v);
 }
 
-void vec_free_all(vec *v) {
+void free_vec_and_elements(vec *v) {
     vec_iter(void *element, v, free(element))
     vec_free(v);
 }

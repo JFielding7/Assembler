@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "abstract_syntax_tree_node.h"
+#include "ast_node.h"
 #include "pattern.h"
 #include "types.h"
 
@@ -32,7 +32,7 @@ void assert_complete_definition(int min_tokens, int line_offset, line *curr_line
 }
 
 void assert_unique_var(char *var_name, namespace *ns, line *curr_line) {
-    if (var_exists(var_name, ns))
+    if (var_lookup(ns, var_name))
         raise_compiler_error("`%s` is already defined", curr_line->line_num, var_name);
 }
 
