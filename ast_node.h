@@ -15,6 +15,11 @@ typedef struct binary_operation_s {
     ast_node *right;
 } binary_operation;
 
+typedef struct literal_s {
+    type *literal_type;
+    char *value;
+} literal_node;
+
 typedef struct var_s {
     type *var_type;
     char *name;
@@ -46,5 +51,7 @@ var_node *var_lookup(namespace *ns, char *name);
 function_node *function_def_node_new(char *type, char *name);
 
 assignment_node *assignment_node_new(var_node *variable, ast_node *value);
+
+literal_node *literal_node_new(type *literal_type, char *value);
 
 #endif //AST_NODE_H

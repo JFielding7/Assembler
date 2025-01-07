@@ -11,4 +11,8 @@ void assignment_assembly(void *);
 
 void add_assembly(void *);
 
+void load_assembly(void *);
+
+void literal_assembly(void *);
+
 #endif //ASSEMBLY_GENERATOR_H

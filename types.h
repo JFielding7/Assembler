@@ -7,14 +7,15 @@
 typedef struct type_s {
     char *name;
     size_t size;
+    bool (*validate_literal)(char*);
 } type;
 
 void compile_native_types();
 
 void free_types();
 
-type *new_type(char *name, size_t size);
-
 bool valid_type(char *type);
+
+type *get_literal_type(char *literal);
 
 #endif //TYPES_H

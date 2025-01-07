@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "pattern.h"
 #include "util.h"
 
 ast_node *ast_node_new(void *node, void (*generate_assembly)(void*)) {
@@ -50,4 +51,11 @@ assignment_node *assignment_node_new(var_node *variable, ast_node *value) {
     assignment_node->var = variable;
     assignment_node->value = value;
     return assignment_node;
+}
+
+literal_node *literal_node_new(type *literal_type, char *value) {
+    literal_node *node = malloc(sizeof(literal_node));
+    node->literal_type = literal_type;
+    node->value = value;
+    return node;
 }

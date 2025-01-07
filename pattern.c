@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "pattern.h"
+
+#include <errno.h>
+#include <string.h>
+
 #include "regex.h"
 #include "vec.h"
 
@@ -30,10 +33,26 @@ void free_regexps() {
     regfree(&symbol_regex);
 }
 
-bool next_token(char *token, regmatch_t *match) {
-    return regexec(&token_regex, token, 1, match, 0) == 0;
+bool next_token(char *start, regmatch_t *match) {
+    return regexec(&token_regex, start, 1, match, 0) == 0;
+}
+
+bool full_match(regex_t *regex, char *str) {
+    return regexec(regex, str, 0, NULL, 0) == 0;
 }
 
 bool valid_symbol(char *symbol) {
-    return regexec(&symbol_regex, symbol, 0, NULL, 0) == 0;
+    return full_match(&symbol_regex, symbol);
+}
+
+bool valid_i64_literal(char *literal) {
+    errno = 0;
+    char *endptr;
+    strtol(literal, &endptr, 0);
+    return errno == 0 && *endptr == '\0';
+}
+
+bool valid_string_literal(char *literal) {
+    size_t len = strlen(literal);
+    return len > 1 && literal[0] == '"' && literal[len - 1] == '"';
 }
