@@ -14,6 +14,8 @@ void compile_native_types();
 
 void free_types();
 
+type *get_type(char *type);
+
 bool valid_type(char *type);
 
 type *get_literal_type(char *literal);

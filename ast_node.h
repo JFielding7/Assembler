@@ -5,6 +5,7 @@
 #include "vec.h"
 
 typedef struct ast_node_s {
+    type *expr_type;
     void *node;
     void (*generate_assembly)(void*);
 } ast_node;
@@ -15,18 +16,8 @@ typedef struct binary_operation_s {
     ast_node *right;
 } binary_operation;
 
-typedef struct literal_s {
-    type *literal_type;
-    char *value;
-} literal_node;
-
-typedef struct var_s {
-    type *var_type;
-    char *name;
-} var_node;
-
 typedef struct assignment_s {
-    var_node *var;
+    ast_node *var;
     ast_node *value;
 } assignment_node;
 
@@ -36,21 +27,20 @@ typedef struct namespace_s {
 } namespace;
 
 typedef struct function_s {
-    type *return_type;
     char *name;
-    namespace ns;
+    namespace func_namespace;
 } function_node;
 
-ast_node *ast_node_new(void *node, void (*generate_assembly)(void*));
+ast_node *var_node_new(type *var_type, char *var_name);
 
-var_node *var_new(char*, char*);
+ast_node *var_lookup(namespace *ns, char *name);
 
-var_node *var_lookup(namespace *ns, char *name);
+ast_node *function_def_node_new(type *ret_type, char *name);
 
-function_node *function_def_node_new(char *type, char *name);
+ast_node *assignment_node_new(ast_node *var, ast_node *value);
 
-assignment_node *assignment_node_new(var_node *variable, ast_node *value);
+ast_node *literal_node_new(type *literal_type, char *value);
 
-literal_node *literal_node_new(type *literal_type, char *value);
+ast_node *binary_operation_new(type *operation_type, ast_node *left, ast_node *right, void (*generate_assembly)(void*));
 
 #endif //AST_NODE_H

@@ -29,14 +29,18 @@ void free_types() {
     free_vec_and_elements(types);
 }
 
-bool valid_type(char *type_name) {
+type *get_type(char *type_name) {
     vec_iter(type *curr, types, {
         if (strcmp(type_name, curr->name) == 0) {
-            return true;
+            return curr;
         }
     })
 
-    return false;
+    return NULL;
+}
+
+bool valid_type(char *type_name) {
+    return get_type(type_name) != NULL;
 }
 
 type *get_literal_type(char *literal) {

@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "assembly_generator.h"
 #include "expression.h"
 #include "types.h"
 #include "util.h"
@@ -22,17 +21,17 @@
 
 static ast_node *var_def_node(vec tokenv, line *curr_line, namespace *ns) {
     puts("Defining var");
-    var_node *var_node = var_new(
+    // TODO: fix type
+    ast_node *var_node = var_node_new(
         vec_get(tokenv, curr_line->start),
-        vec_get(tokenv, curr_line->start + 1));
+        vec_get(tokenv, curr_line->start + 1)
+    );
 
-    assert_unique_var(var_node->name, ns, curr_line);
+    assert_unique_var(var_node->node, ns, curr_line);
     vec_push(ns->vars, var_node);
 
-    return ast_node_new(
-        assignment_node_new(var_node,
-        parse_expression(tokenv, curr_line->start + 3, curr_line->end, curr_line->line_num, ns)),
-        &assignment_assembly);
+    return assignment_node_new(var_node,
+        parse_expression(tokenv, curr_line->start + 3, curr_line->end, curr_line->line_num, ns));
 }
 
 /**
@@ -43,9 +42,11 @@ static ast_node *var_def_node(vec tokenv, line *curr_line, namespace *ns) {
  * @return
  */
 static ast_node *function_def_node(vec tokenv, line *curr_line, vec namespaces) {
-    function_node *func_node = function_def_node_new(
+    ast_node *node = function_def_node_new(
         vec_get(tokenv, curr_line->start),
-        vec_get(tokenv, curr_line->start + 1));
+        vec_get(tokenv, curr_line->start + 1)
+    );
+    function_node *func_node = node->node;
 
     size_t i = curr_line->start + PARAM_START;
     i += i + 1 == curr_line->end && strcmp(vec_get(tokenv, i), PAREN_CLOSE) == 0;
@@ -53,22 +54,23 @@ static ast_node *function_def_node(vec tokenv, line *curr_line, vec namespaces) 
     while (i < curr_line->end) {
         assert_has_min_tokens(PARAM_MIN_TOKENS, i, curr_line);
 
-        char *type = vec_get(tokenv, i++);
-        assert_valid_type(type, curr_line);
+        char *type_name = vec_get(tokenv, i++);
+        type *param_type = get_type(type_name);
+        assert_valid_type(param_type, curr_line);
 
         char *param_name = vec_get(tokenv, i++);
         assert_valid_symbol(param_name, curr_line);
 
         assert_token_equals(vec_get(tokenv, i), i + 1 == curr_line->end ? PAREN_CLOSE : PARAM_SEP, curr_line);
         i++;
-        assert_unique_var(param_name, &func_node->ns, curr_line);
+        assert_unique_var(param_name, &func_node->func_namespace, curr_line);
 
         // fix type, link with actual type structure
-        vec_push(func_node->ns.vars, var_new(type, param_name));
+        vec_push(func_node->func_namespace.vars, var_node_new(param_type, param_name));
     }
 
-    vec_push(namespaces, &func_node->ns);
-    return ast_node_new(func_node, &function_assembly);
+    vec_push(namespaces, &func_node->func_namespace);
+    return node;
 }
 
 static ast_node *symbol_definition(vec tokenv, line *curr_line, vec namespaces) {

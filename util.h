@@ -4,7 +4,7 @@
 #include "ast_node.h"
 #include "line_iterator.h"
 
-void assert_valid_type(char *type, line *curr_line);
+void assert_valid_type(type *expr_type, line *curr_line);
 
 void assert_valid_symbol(char *symbol, line *curr_line);
 

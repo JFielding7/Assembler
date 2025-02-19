@@ -39,12 +39,12 @@ typedef struct operator_s {
 } operator;
 
 static ast_node *assignment(expression_parser *parser);
-static ast_node *binary_operator(expression_parser *parser);
+static ast_node *add_operator(expression_parser *parser);
 static ast_node *parse_sub_expression(expression_parser *parser);
 
 static operator operators[COMMON_PRECEDENCE_GROUPS][MAX_OPERATORS_PER_GROUP + 1] = {
     {{.operator_token = "=", .parse_func = &assignment}, {}},
-    {{"+", &binary_operator}, {"-", &binary_operator}, {}},
+    {{"+", &add_operator}, {}},
 };
 
 
@@ -77,14 +77,14 @@ static bool match_parens(vec tokenv, size_t start, size_t end, size_t *matches) 
     return vec_len(open_parens) == 0;
 }
 
-var_node *get_var(expression_parser *parser) {
+ast_node *get_var(expression_parser *parser) {
     if (parser->token_index - parser->expr_start != 1) {
         return NULL;
     }
     return var_lookup(parser->ns, vec_get(parser->tokenv, parser->token_index - 1));
 }
 
-static ast_node *binary_operator(expression_parser *parser) {
+static ast_node *add_operator(expression_parser *parser) {
     expression_parser left_parser = *parser;
     left_parser.end = parser->token_index;
     ast_node *left = parse_sub_expression(&left_parser);
@@ -93,22 +93,22 @@ static ast_node *binary_operator(expression_parser *parser) {
     right_parser.start = parser->token_index + 1;
     ast_node *right = parse_sub_expression(&right_parser);
 
-
+    // TODO: fix type
+    return binary_operation_new(right->expr_type, left, right, &add_assembly);
 }
 
 static ast_node *assignment(expression_parser *parser) {
     puts("Assignment");
-    var_node *var = get_var(parser);
-    if (var == NULL) {
+    ast_node *var_node = get_var(parser);
+    if (var_node == NULL) {
         raise_compiler_error("Invalid Assignment", parser->line_num);
     }
 
     expression_parser val_parser = *parser;
     val_parser.start = parser->token_index + 1;
-    ast_node *val = parse_sub_expression(&val_parser);
+    ast_node *value = parse_sub_expression(&val_parser);
 
-    assignment_node *node = assignment_node_new(var, val);
-    return ast_node_new(node, &assignment_assembly);
+    return assignment_node_new(var_node, value);
 }
 
 static ast_node *compile_operator(expression_parser *parser) {
@@ -132,12 +132,12 @@ static ast_node *parse_value(expression_parser *parser) {
     type *literal_type = get_literal_type(token);
     if (literal_type != NULL) {
         // printf("Literal Type %s\n", literal_type->name);
-        return ast_node_new(literal_node_new(literal_type, token), &literal_assembly);
+        return literal_node_new(literal_type, token);
     }
 
-    var_node *var = var_lookup(parser->ns, token);
+    ast_node *var = var_lookup(parser->ns, token);
     if (var != NULL) {
-        return ast_node_new(var, &load_assembly);
+        return var_node_new(var->expr_type, token);
     }
 
     return NULL;

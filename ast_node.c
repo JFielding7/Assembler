@@ -3,20 +3,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "assembly_generator.h"
 #include "pattern.h"
 #include "util.h"
 
-ast_node *ast_node_new(void *node, void (*generate_assembly)(void*)) {
+ast_node *ast_node_new(type *expr_type, void *node, void (*generate_assembly)(void*)) {
     ast_node *n = malloc(sizeof(ast_node));
+    n->expr_type = expr_type;
     n->node = node;
     n->generate_assembly = generate_assembly;
     return n;
 }
 
-var_node *var_new(char *type, char *name) {
-    var_node *var = malloc(sizeof(var_node));
-    var->name = name;
-    return var;
+// TODO: fix types
+ast_node *var_node_new(type *var_type, char *var_name) {
+    return ast_node_new(var_type, var_name, &load_assembly);
 }
 
 void init_namespace(namespace *ns) {
@@ -24,33 +25,43 @@ void init_namespace(namespace *ns) {
     ns->parent = NULL;
 }
 
-var_node *var_lookup(namespace *ns, char *name) {
-    vec_iter(var_node *curr_var, ns->vars, {
-        if (strcmp(name, curr_var->name) == 0) {
-            return curr_var;
-        }
-    })
+ast_node *var_lookup(namespace *ns, char *name) {
+    while (ns != NULL) {
+        vec_iter(ast_node *curr_var, ns->vars, {
+            if (strcmp(name, curr_var->node) == 0) {
+                return curr_var;
+            }
+        })
 
-    return ns->parent == NULL ? NULL : var_lookup(ns->parent, name);
+        ns = ns->parent;
+    }
+
+    return NULL;
 }
 
-function_node *function_def_node_new(char *type, char *name) {
+ast_node *function_def_node_new(type *ret_type, char *name) {
     function_node *func_node = malloc(sizeof(function_node));
     func_node->name = name;
-    init_namespace(&func_node->ns);
-    return func_node;
+    init_namespace(&func_node->func_namespace);
+    return ast_node_new(ret_type, func_node, &function_assembly);
 }
 
-assignment_node *assignment_node_new(var_node *variable, ast_node *value) {
+ast_node *assignment_node_new(ast_node *var, ast_node *value) {
     assignment_node *assignment_node = malloc(sizeof(assignment_node));
-    assignment_node->var = variable;
+    assignment_node->var = var;
     assignment_node->value = value;
-    return assignment_node;
+    return ast_node_new(var->expr_type, assignment_node, &assignment_assembly);
 }
 
-literal_node *literal_node_new(type *literal_type, char *value) {
-    literal_node *node = malloc(sizeof(literal_node));
-    node->literal_type = literal_type;
-    node->value = value;
-    return node;
+ast_node *literal_node_new(type *literal_type, char *value) {
+    return ast_node_new(literal_type, value, &literal_assembly);
+}
+
+ast_node *binary_operation_new(type *operation_type, ast_node *left, ast_node *right, void (*generate_assembly)(void*)) {
+    binary_operation *node = malloc(sizeof(binary_operation));
+    node->operation_type = operation_type;
+    node->left = left;
+    node->right = right;
+    // TODO: Assembly function
+    return ast_node_new(operation_type, node, generate_assembly);
 }
