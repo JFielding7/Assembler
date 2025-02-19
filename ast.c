@@ -11,13 +11,16 @@
 #include "types.h"
 #include "util.h"
 
-#define MIN_DEF_LEN 4
-
+#define MIN_SYMBOL_DEF_LEN 4
 #define PARAM_START 3
 #define PARAM_SEP ","
 #define PARAM_MIN_TOKENS 3
 
-static ast_node *var_def_node(vec *tokenv, line *curr_line, namespace *ns) {
+#define ASSIGNMENT "="
+#define PAREN_OPEN "("
+#define PAREN_CLOSE ")"
+
+static ast_node *var_def_node(vec tokenv, line *curr_line, namespace *ns) {
     puts("Defining var");
     var_node *var_node = var_new(
         vec_get(tokenv, curr_line->start),
@@ -28,11 +31,18 @@ static ast_node *var_def_node(vec *tokenv, line *curr_line, namespace *ns) {
 
     return ast_node_new(
         assignment_node_new(var_node,
-        parse_expression(tokenv, curr_line->start + (MIN_DEF_LEN - 1), curr_line->end, curr_line->line_num, ns)),
+        parse_expression(tokenv, curr_line->start + 3, curr_line->end, curr_line->line_num, ns)),
         &assignment_assembly);
 }
 
-static ast_node *function_def_node(vec *tokenv, line *curr_line, vec *namespaces) {
+/**
+ * Creates AST Node for a function definition
+ * @param tokenv Tokens
+ * @param curr_line Current Line
+ * @param namespaces
+ * @return
+ */
+static ast_node *function_def_node(vec tokenv, line *curr_line, vec namespaces) {
     function_node *func_node = function_def_node_new(
         vec_get(tokenv, curr_line->start),
         vec_get(tokenv, curr_line->start + 1));
@@ -41,7 +51,7 @@ static ast_node *function_def_node(vec *tokenv, line *curr_line, vec *namespaces
     i += i + 1 == curr_line->end && strcmp(vec_get(tokenv, i), PAREN_CLOSE) == 0;
 
     while (i < curr_line->end) {
-        assert_complete_definition(PARAM_MIN_TOKENS, i, curr_line);
+        assert_has_min_tokens(PARAM_MIN_TOKENS, i, curr_line);
 
         char *type = vec_get(tokenv, i++);
         assert_valid_type(type, curr_line);
@@ -53,6 +63,7 @@ static ast_node *function_def_node(vec *tokenv, line *curr_line, vec *namespaces
         i++;
         assert_unique_var(param_name, &func_node->ns, curr_line);
 
+        // fix type, link with actual type structure
         vec_push(func_node->ns.vars, var_new(type, param_name));
     }
 
@@ -60,7 +71,7 @@ static ast_node *function_def_node(vec *tokenv, line *curr_line, vec *namespaces
     return ast_node_new(func_node, &function_assembly);
 }
 
-static ast_node *symbol_definition(vec *tokenv, line *curr_line, vec *namespaces) {
+static ast_node *symbol_definition(vec tokenv, line *curr_line, vec namespaces) {
     char *symbol = vec_get(tokenv, curr_line->start + 1);
     assert_valid_symbol(symbol, curr_line);
 
@@ -77,14 +88,22 @@ static ast_node *symbol_definition(vec *tokenv, line *curr_line, vec *namespaces
     return NULL;
 }
 
-static ast_node *create_ast_node(vec *tokenv, line *curr_line, vec *ns) {
+/**
+ * Creates an abstract syntax tree node for the current line
+ * @param tokenv Tokens
+ * @param curr_line Current line
+ * @param namespaces
+ * @return ast_node: AST node for the current line
+ */
+static ast_node *create_ast_node(vec tokenv, line *curr_line, vec namespaces) {
     char *token = vec_get(tokenv, curr_line->start);
+
     if (valid_type(token)) {
-        assert_complete_definition(MIN_DEF_LEN, curr_line->start, curr_line);
-        return symbol_definition(tokenv, curr_line, ns);
+        assert_has_min_tokens(MIN_SYMBOL_DEF_LEN, curr_line->start, curr_line);
+        return symbol_definition(tokenv, curr_line, namespaces);
     }
 
-    return NULL;
+    return parse_expression(tokenv, curr_line->start, curr_line->end, curr_line->line_num, vec_peek_end(namespaces));
 }
 
 /**
@@ -92,8 +111,8 @@ static ast_node *create_ast_node(vec *tokenv, line *curr_line, vec *ns) {
  * @param tokenv Vector of tokens in the source code
  * @return ast_node Root of the code's abstarct syntax tree
  */
-ast_node *generate_ast(vec *tokenv) {
-    vec *namespaces = vec_new();
+ast_node *generate_ast(vec tokenv) {
+    vec namespaces = vec_new();
 
     line_iterator iter;
     init_line_iterator(&iter, tokenv);

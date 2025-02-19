@@ -10,34 +10,71 @@
 #define COMMON_PRECEDENCE_GROUPS 2
 #define MAX_OPERATORS_PER_GROUP 3
 
+#define ASSIGNMENT "="
+#define ADD "+"
+#define SUB "-"
+#define MUL "*"
+#define DIV "/"
+#define MOD "%"
+
+#define PAREN_OPEN "("
+#define PAREN_CLOSE ")"
+
+typedef struct expression_parser_s {
+    vec tokenv;
+    char *token;
+    size_t token_index;
+    size_t expr_start;
+    size_t start;
+    size_t end;
+    size_t op_group_index;
+    size_t line_num;
+    size_t *paren_matches;
+    namespace *ns;
+} expression_parser;
+
 typedef struct operator_s {
     char *operator_token;
     ast_node *(*parse_func)(expression_parser*);
 } operator;
+
+static ast_node *assignment(expression_parser *parser);
+static ast_node *binary_operator(expression_parser *parser);
+static ast_node *parse_sub_expression(expression_parser *parser);
 
 static operator operators[COMMON_PRECEDENCE_GROUPS][MAX_OPERATORS_PER_GROUP + 1] = {
     {{.operator_token = "=", .parse_func = &assignment}, {}},
     {{"+", &binary_operator}, {"-", &binary_operator}, {}},
 };
 
-static int match_parens(vec *tokenv, size_t start, size_t end, size_t *matches) {
+
+/**
+ * Finds and stores the matching pairs of parentheses in an array
+ * @param tokenv Tokens
+ * @param start start offset within tokenv to start matching
+ * @param end index within tokenv to stop matching
+ * @param matches array containing matched pairs of parentheses
+ * @return true if all parentheses are matched, false otherwise
+ */
+static bool match_parens(vec tokenv, size_t start, size_t end, size_t *matches) {
     printf("Matching Parens\n");
-    vec *open_parens = vec_new();
+    vec open_parens = vec_new();
 
     for (size_t i = start; i < end; i++) {
+
         char *token = vec_get(tokenv, start);
         if (strcmp(token, PAREN_OPEN) == 0) {
             vec_push_val(open_parens, i);
         } else if (strcmp(token, PAREN_CLOSE) == 0) {
-            if (open_parens->len == 0) {
-                return 1;
+            if (vec_len(open_parens) == 0) {
+                return false;
             }
             matches[i - start] = vec_pop_val(open_parens, size_t);
         }
     }
 
-    printf("Len: %lu\n", open_parens->len);
-    return open_parens->len != 0;
+    printf("Len: %lu\n", vec_len(open_parens));
+    return vec_len(open_parens) == 0;
 }
 
 var_node *get_var(expression_parser *parser) {
@@ -48,7 +85,15 @@ var_node *get_var(expression_parser *parser) {
 }
 
 static ast_node *binary_operator(expression_parser *parser) {
-    return NULL;
+    expression_parser left_parser = *parser;
+    left_parser.end = parser->token_index;
+    ast_node *left = parse_sub_expression(&left_parser);
+
+    expression_parser right_parser = *parser;
+    right_parser.start = parser->token_index + 1;
+    ast_node *right = parse_sub_expression(&right_parser);
+
+
 }
 
 static ast_node *assignment(expression_parser *parser) {
@@ -67,9 +112,9 @@ static ast_node *assignment(expression_parser *parser) {
 }
 
 static ast_node *compile_operator(expression_parser *parser) {
-    for (operator *op_group = operators[parser->op_group_index]; op_group->operator_token != NULL; op_group++) {
-        if (strcmp(parser->token, op_group->operator_token) == 0) {
-            return (*op_group->parse_func)(parser);
+    for (operator *op = operators[parser->op_group_index]; op->operator_token != NULL; op++) {
+        if (strcmp(parser->token, op->operator_token) == 0) {
+            return (*op->parse_func)(parser);
         }
     }
 
@@ -86,7 +131,7 @@ static ast_node *parse_value(expression_parser *parser) {
     char *token = vec_get(parser->tokenv, parser->start);
     type *literal_type = get_literal_type(token);
     if (literal_type != NULL) {
-        printf("Literal Type %s\n", literal_type->name);
+        // printf("Literal Type %s\n", literal_type->name);
         return ast_node_new(literal_node_new(literal_type, token), &literal_assembly);
     }
 
@@ -99,6 +144,7 @@ static ast_node *parse_value(expression_parser *parser) {
 }
 
 static ast_node *parse_sub_expression(expression_parser *parser) {
+    printf("Expr: ");
     for (size_t i = parser->start; i < parser->end; i++) {
         printf("%s ", (char*) vec_get(parser->tokenv, i));
     }
@@ -108,7 +154,7 @@ static ast_node *parse_sub_expression(expression_parser *parser) {
         return parse_value(parser);
     }
 
-    vec *tokenv = parser->tokenv;
+    vec tokenv = parser->tokenv;
     if (strcmp(vec_get(tokenv, parser->start), PAREN_OPEN) == 0
         && strcmp(vec_get(tokenv, parser->end), PAREN_CLOSE) == 0) {
         return parse_parenthetical_expression(parser);
@@ -118,9 +164,9 @@ static ast_node *parse_sub_expression(expression_parser *parser) {
 
         parser->token_index = parser->end - 1;
         while (parser->token_index >= parser->start) {
-
             parser->token = vec_get(tokenv, parser->token_index);
-            puts(parser->token);
+            // printf("Token: %s\n", parser->token);
+
             if (strcmp(parser->token, PAREN_CLOSE) == 0) {
                 parser->token_index = parser->paren_matches[parser->token_index - parser->expr_start];
             }
@@ -138,7 +184,7 @@ static ast_node *parse_sub_expression(expression_parser *parser) {
     return NULL;
 }
 
-static void init_expression_parser(expression_parser *parser, vec *tokenv, size_t start, size_t end, size_t line_num, namespace *ns) {
+static void init_expression_parser(expression_parser *parser, vec tokenv, size_t start, size_t end, size_t line_num, namespace *ns) {
     parser->tokenv = tokenv;
     parser->expr_start = start;
     parser->start = start;
@@ -148,10 +194,10 @@ static void init_expression_parser(expression_parser *parser, vec *tokenv, size_
     parser->ns = ns;
 }
 
-ast_node *parse_expression(vec *tokenv, size_t start, size_t end, size_t line_num, namespace *ns) {
+ast_node *parse_expression(vec tokenv, size_t start, size_t end, size_t line_num, namespace *ns) {
     size_t paren_matches[end - start];
-    int ret = match_parens(tokenv, start, end, paren_matches);
-    if (ret != 0) {
+    bool valid_parens = match_parens(tokenv, start, end, paren_matches);
+    if (!valid_parens) {
         raise_compiler_error("Mismatched Parentheses", line_num);
     }
 

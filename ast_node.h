@@ -10,7 +10,7 @@ typedef struct ast_node_s {
 } ast_node;
 
 typedef struct binary_operation_s {
-    void (*operation)(ast_node*, ast_node*);
+    type *operation_type;
     ast_node *left;
     ast_node *right;
 } binary_operation;
@@ -31,14 +31,13 @@ typedef struct assignment_s {
 } assignment_node;
 
 typedef struct namespace_s {
-    vec *vars;
+    vec vars;
     struct namespace_s *parent;
 } namespace;
 
 typedef struct function_s {
     type *return_type;
     char *name;
-    vec *statements;
     namespace ns;
 } function_node;
 

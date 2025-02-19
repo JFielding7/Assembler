@@ -9,7 +9,7 @@
 #define i64_SIZE 8
 #define STR_SIZE 8
 
-static vec *types;
+static vec types;
 
 type *new_native_type(char *name, size_t size, bool (*validate_literal)(char*)) {
     type *data_type = malloc(sizeof(type));

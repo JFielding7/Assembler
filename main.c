@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
     allocate_resources();
 
-    vec *tokenv = tokenize_source_code_files(argv + 1);
+    vec tokenv = tokenize_file(argv[1]);
 
     generate_ast(tokenv);
 

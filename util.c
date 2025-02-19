@@ -21,12 +21,12 @@ void assert_valid_symbol(char *symbol, line *curr_line) {
         raise_compiler_error("Invalid symbol `%s`", curr_line->line_num, symbol);
 }
 
-void assert_token_equals(char *token, char *s, line *curr_line) {
-    if (strcmp(token, s) != 0)
-        raise_compiler_error("Expected `%s`", curr_line->line_num);
+void assert_token_equals(char *token, char *expected_token, line *curr_line) {
+    if (strcmp(token, expected_token) != 0)
+        raise_compiler_error("Expected `%expected_token`", curr_line->line_num);
 }
 
-void assert_complete_definition(int min_tokens, int line_offset, line *curr_line) {
+void assert_has_min_tokens(int min_tokens, int line_offset, line *curr_line) {
     if (curr_line->end - line_offset < min_tokens)
         raise_compiler_error("Incomplete defintion", curr_line->line_num);
 }

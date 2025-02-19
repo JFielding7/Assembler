@@ -7,7 +7,7 @@
 #include "pattern.h"
 
 #define MIN_FILENAME_LEN 4
-#define FILE_EXT ".ro"
+#define FILE_EXT ".dk"
 
 /**
  * Opens a source code file
@@ -92,7 +92,7 @@ char *read_source_file(const char *name) {
     return buffer;
 }
 
-int tokenize(regmatch_t* match, char *source_code_cursor, vec *tokenv) {
+int tokenize(regmatch_t* match, char *source_code_cursor, vec tokenv) {
     while (next_token(source_code_cursor, match)) {
         source_code_cursor += match->rm_so;
 
@@ -108,20 +108,14 @@ int tokenize(regmatch_t* match, char *source_code_cursor, vec *tokenv) {
     return 0;
 }
 
-vec *tokenize_source_code_files(char **filenames) {
-    vec *tokenv = vec_new();
-    for (char **source_file = filenames; *source_file != NULL; source_file++) {
-        char *source_file_content = read_source_file(*source_file);
+vec tokenize_file(char *filename) {
+    vec tokenv = vec_new();
+    char *source_file_content = read_source_file(filename);
 
-        char *new_line = malloc(2);
-        strcpy(new_line, "\n");
-        vec_push(tokenv, new_line);
+    regmatch_t match[1];
+    tokenize(match, source_file_content, tokenv);
 
-        regmatch_t match[1];
-        tokenize(match, source_file_content, tokenv);
-
-        free(source_file_content);
-    }
+    free(source_file_content);
 
     return tokenv;
 }

@@ -7,6 +7,6 @@
 
 bool valid_symbol(char *symbol);
 
-vec *tokenize_source_code_files(char **filenames);
+vec tokenize_file(char *filename);
 
 #endif //TOKENIZER_H

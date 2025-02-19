@@ -41,11 +41,6 @@ function_node *function_def_node_new(char *type, char *name) {
     return func_node;
 }
 
-void add_func_statement(ast_node *func, ast_node *statement) {
-    function_node *func_node = func->node;
-    vec_push(func_node->statements, statement);
-}
-
 assignment_node *assignment_node_new(var_node *variable, ast_node *value) {
     assignment_node *assignment_node = malloc(sizeof(assignment_node));
     assignment_node->var = variable;

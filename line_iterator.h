@@ -13,11 +13,11 @@ typedef struct line_s {
 } line;
 
 typedef struct line_iterator_s {
-    vec *tokenv;
+    vec tokenv;
     line curr_line;
 } line_iterator;
 
-void init_line_iterator(line_iterator *iter, vec *tokenv);
+void init_line_iterator(line_iterator *iter, vec tokenv);
 
 line *next_line(line_iterator *iter);
 
