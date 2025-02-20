@@ -10,6 +10,7 @@ typedef struct line_s {
     size_t start;
     size_t end;
     size_t indent;
+    char *filename;
 } line;
 
 typedef struct line_iterator_s {
@@ -17,7 +18,7 @@ typedef struct line_iterator_s {
     line curr_line;
 } line_iterator;
 
-void init_line_iterator(line_iterator *iter, vec tokenv);
+void init_line_iterator(line_iterator *iter, char *filename, vec tokenv);
 
 line *next_line(line_iterator *iter);
 

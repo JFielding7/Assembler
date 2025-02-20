@@ -106,15 +106,25 @@ int tokenize(regmatch_t* match, char *source_code_cursor, vec tokenv) {
     return 0;
 }
 
+char *get_new_line() {
+    char *new_line = malloc(2);
+    strcpy(new_line, "\n");
+    return new_line;
+}
+
+/**
+ * Tokenizes an input file
+ * @param filename name of the file
+ * @return vec: contains all tokens in the file
+ */
 vec tokenize_file(char *filename) {
     vec tokenv = vec_new();
     char *source_file_content = read_source_file(filename);
 
-    char *new_line = malloc(2);
-    strcpy(new_line, "\n");
-    vec_push(tokenv, new_line);
+    vec_push(tokenv, get_new_line());
     regmatch_t match[1];
     tokenize(match, source_file_content, tokenv);
+    vec_push(tokenv, get_new_line());
 
     free(source_file_content);
 

@@ -10,10 +10,11 @@
 #define TAB_SHIFT 2
 #define TAB_WIDTH (1 << TAB_SHIFT)
 
-void init_line_iterator(line_iterator *iter, vec tokenv) {
+void init_line_iterator(line_iterator *iter, char *filename, vec tokenv) {
     iter->curr_line.start = 0;
     iter->curr_line.end = 0;
     iter->curr_line.line_num = 0;
+    iter->curr_line.filename = filename;
     iter->tokenv = tokenv;
 }
 
@@ -27,8 +28,7 @@ int get_indent_level(char *indent_token) {
             case SPACE:
                 count++;
             break;
-            default:
-                break;
+            default: break;
         }
     }
 
@@ -42,7 +42,7 @@ line *next_line(line_iterator *iter) {
     curr_line->line_num++;
     int indent = get_indent_level(vec_get(tokenv, curr_line->end));
     if (indent == SUSPICIOUS_INDENT) {
-        raise_compiler_error("Indent size not a multiple of %d\n", curr_line->line_num, TAB_WIDTH);
+        raise_compiler_error("Indent size not a multiple of %d\n", curr_line, TAB_WIDTH);
     }
 
     curr_line->indent = indent;

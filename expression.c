@@ -22,13 +22,13 @@
 
 typedef struct expression_parser_s {
     vec tokenv;
+    line *line;
     char *token;
     size_t token_index;
     size_t expr_start;
     size_t start;
     size_t end;
     size_t op_group_index;
-    size_t line_num;
     size_t *paren_matches;
     namespace *ns;
 } expression_parser;
@@ -42,7 +42,7 @@ static ast_node *assignment(expression_parser *parser);
 static ast_node *add_operator(expression_parser *parser);
 static ast_node *parse_sub_expression(expression_parser *parser);
 
-static operator operators[COMMON_PRECEDENCE_GROUPS][MAX_OPERATORS_PER_GROUP + 1] = {
+operator operators[COMMON_PRECEDENCE_GROUPS][MAX_OPERATORS_PER_GROUP + 1] = {
     {{.operator_token = "=", .parse_func = &assignment}, {}},
     {{"+", &add_operator}, {}},
 };
@@ -57,7 +57,7 @@ static operator operators[COMMON_PRECEDENCE_GROUPS][MAX_OPERATORS_PER_GROUP + 1]
  * @return true if all parentheses are matched, false otherwise
  */
 static bool match_parens(vec tokenv, size_t start, size_t end, size_t *matches) {
-    printf("Matching Parens\n");
+    // printf("Matching Parens\n");
     vec open_parens = vec_new();
 
     for (size_t i = start; i < end; i++) {
@@ -73,15 +73,8 @@ static bool match_parens(vec tokenv, size_t start, size_t end, size_t *matches) 
         }
     }
 
-    printf("Len: %lu\n", vec_len(open_parens));
+    // printf("Len: %lu\n", vec_len(open_parens));
     return vec_len(open_parens) == 0;
-}
-
-ast_node *get_var(expression_parser *parser) {
-    if (parser->token_index - parser->expr_start != 1) {
-        return NULL;
-    }
-    return var_lookup(parser->ns, vec_get(parser->tokenv, parser->token_index - 1));
 }
 
 static ast_node *add_operator(expression_parser *parser) {
@@ -99,16 +92,16 @@ static ast_node *add_operator(expression_parser *parser) {
 
 static ast_node *assignment(expression_parser *parser) {
     puts("Assignment");
-    ast_node *var_node = get_var(parser);
-    if (var_node == NULL) {
-        raise_compiler_error("Invalid Assignment", parser->line_num);
+    if (parser->token_index - parser->expr_start != 1) {
+        raise_compiler_error("Invalid Assignment", parser->line);
     }
+    ast_node *var_node = var_lookup(parser->ns, vec_get(parser->tokenv, parser->token_index - 1));
 
     expression_parser val_parser = *parser;
     val_parser.start = parser->token_index + 1;
     ast_node *value = parse_sub_expression(&val_parser);
 
-    return assignment_node_new(var_node, value);
+    return binary_operation_new(value->expr_type, var_node, value, &assignment_assembly);
 }
 
 static ast_node *compile_operator(expression_parser *parser) {
@@ -144,11 +137,11 @@ static ast_node *parse_value(expression_parser *parser) {
 }
 
 static ast_node *parse_sub_expression(expression_parser *parser) {
-    printf("Expr: ");
-    for (size_t i = parser->start; i < parser->end; i++) {
-        printf("%s ", (char*) vec_get(parser->tokenv, i));
-    }
-    puts("");
+    // printf("Expr: ");
+    // for (size_t i = parser->start; i < parser->end; i++) {
+    //     printf("%s ", (char*) vec_get(parser->tokenv, i));
+    // }
+    // puts("");
 
     if (parser->start + 1 == parser->end) {
         return parse_value(parser);
@@ -184,31 +177,29 @@ static ast_node *parse_sub_expression(expression_parser *parser) {
     return NULL;
 }
 
-static void init_expression_parser(expression_parser *parser, vec tokenv, size_t start, size_t end, size_t line_num, namespace *ns) {
+static void init_expression_parser(expression_parser *parser, vec tokenv, line *curr_line, size_t start, size_t end, namespace *ns) {
     parser->tokenv = tokenv;
     parser->expr_start = start;
     parser->start = start;
     parser->end = end;
-    parser->line_num = line_num;
+    parser->line = curr_line;
     parser->op_group_index = 0;
     parser->ns = ns;
 }
 
-ast_node *parse_expression(vec tokenv, size_t start, size_t end, size_t line_num, namespace *ns) {
+ast_node *parse_expression(vec tokenv, line *curr_line, size_t start, size_t end, namespace *ns) {
     size_t paren_matches[end - start];
     bool valid_parens = match_parens(tokenv, start, end, paren_matches);
     if (!valid_parens) {
-        raise_compiler_error("Mismatched Parentheses", line_num);
+        raise_compiler_error("Mismatched Parentheses", curr_line);
     }
 
-    printf("Line num: %lu\n", line_num);
-    for (size_t i = 0; i < end - start; i++) {
-        printf("%lu, ", paren_matches[i]);
-    }
-
-    return NULL;
+    // printf("Line num: %lu\n", line_num);
+    // for (size_t i = 0; i < end - start; i++) {
+    //     printf("%lu, ", paren_matches[i]);
+    // }
 
     expression_parser parser;
-    init_expression_parser(&parser, tokenv, start, end, line_num, ns);
+    init_expression_parser(&parser, tokenv, curr_line, start, end, ns);
     return parse_sub_expression(&parser);
 }

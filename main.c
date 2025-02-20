@@ -30,8 +30,7 @@ int main(int argc, char *argv[]) {
     allocate_resources();
 
     vec tokenv = tokenize_file(argv[1]);
-    // vec_str_print(tokenv);
-    generate_ast(tokenv);
+    generate_ast(argv[1], tokenv);
     free_vec_and_elements(tokenv);
 
     deallocate_resources();

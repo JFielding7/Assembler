@@ -8,11 +8,11 @@ typedef struct ast_node_s {
     type *expr_type;
     void *node;
     void (*generate_assembly)(void*);
+    void (*free_func)(struct ast_node_s*);
     void (*print)(struct ast_node_s*, size_t);
 } ast_node;
 
 typedef struct binary_operation_s {
-    type *operation_type;
     ast_node *left;
     ast_node *right;
 } binary_operation_node;
