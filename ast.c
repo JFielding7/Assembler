@@ -42,8 +42,8 @@ static ast_node *var_def_node(vec tokenv, line *curr_line, namespace *ns) {
  * @return
  */
 static ast_node *function_def_node(vec tokenv, line *curr_line, vec namespaces) {
-    ast_node *node = function_def_node_new(
-        vec_get(tokenv, curr_line->start),
+    ast_node *node = function_node_new(
+        get_type(vec_get(tokenv, curr_line->start)),
         vec_get(tokenv, curr_line->start + 1)
     );
     function_node *func_node = node->node;
@@ -55,8 +55,8 @@ static ast_node *function_def_node(vec tokenv, line *curr_line, vec namespaces) 
         assert_has_min_tokens(PARAM_MIN_TOKENS, i, curr_line);
 
         char *type_name = vec_get(tokenv, i++);
+        assert_valid_type(type_name, curr_line);
         type *param_type = get_type(type_name);
-        assert_valid_type(param_type, curr_line);
 
         char *param_name = vec_get(tokenv, i++);
         assert_valid_symbol(param_name, curr_line);
@@ -65,8 +65,8 @@ static ast_node *function_def_node(vec tokenv, line *curr_line, vec namespaces) 
         i++;
         assert_unique_var(param_name, &func_node->func_namespace, curr_line);
 
-        // fix type, link with actual type structure
-        vec_push(func_node->func_namespace.vars, var_node_new(param_type, param_name));
+        function_node_add_var(func_node, var_node_new(param_type, param_name));
+        func_node->param_count++;
     }
 
     vec_push(namespaces, &func_node->func_namespace);
@@ -100,7 +100,9 @@ static ast_node *symbol_definition(vec tokenv, line *curr_line, vec namespaces) 
 static ast_node *create_ast_node(vec tokenv, line *curr_line, vec namespaces) {
     char *token = vec_get(tokenv, curr_line->start);
 
+    printf("Cheking def %s %lu\n", token, curr_line->start);
     if (valid_type(token)) {
+        puts("DEF");
         assert_has_min_tokens(MIN_SYMBOL_DEF_LEN, curr_line->start, curr_line);
         return symbol_definition(tokenv, curr_line, namespaces);
     }
@@ -122,7 +124,7 @@ ast_node *generate_ast(vec tokenv) {
     line *curr_line = next_line(&iter);
     while (curr_line != NULL) {
         ast_node *node = create_ast_node(tokenv, curr_line, namespaces);
-
+        ast_tree_print(node);
         curr_line = next_line(&iter);
     }
 

@@ -201,6 +201,13 @@ ast_node *parse_expression(vec tokenv, size_t start, size_t end, size_t line_num
         raise_compiler_error("Mismatched Parentheses", line_num);
     }
 
+    printf("Line num: %lu\n", line_num);
+    for (size_t i = 0; i < end - start; i++) {
+        printf("%lu, ", paren_matches[i]);
+    }
+
+    return NULL;
+
     expression_parser parser;
     init_expression_parser(&parser, tokenv, start, end, line_num, ns);
     return parse_sub_expression(&parser);

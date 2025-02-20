@@ -11,6 +11,7 @@
 #define TAB_WIDTH (1 << TAB_SHIFT)
 
 void init_line_iterator(line_iterator *iter, vec tokenv) {
+    iter->curr_line.start = 0;
     iter->curr_line.end = 0;
     iter->curr_line.line_num = 0;
     iter->tokenv = tokenv;

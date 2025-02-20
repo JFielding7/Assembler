@@ -13,7 +13,7 @@ struct vec_s {
 };
 
 vec vec_new() {
-    vec v = malloc(sizeof(vec));
+    vec v = malloc(sizeof(struct vec_s));
     v->buffer = malloc(INITIAL_CAPACITY << ALLOCATION_SHIFT);
     v->capacity = INITIAL_CAPACITY;
     v->len = 0;

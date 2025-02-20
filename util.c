@@ -11,9 +11,9 @@
 
 #define ERROR_LINE_MESSAGE "ERROR: line %lu: "
 
-void assert_valid_type(type *expr_type, line *curr_line) {
-    if (expr_type == NULL)
-        raise_compiler_error("Invalid type `%s`", curr_line->line_num, expr_type->name);
+void assert_valid_type(char *expr_type, line *curr_line) {
+    if (!valid_type(expr_type))
+        raise_compiler_error("Invalid type `%s`", curr_line->line_num, expr_type);
 }
 
 void assert_valid_symbol(char *symbol, line *curr_line) {

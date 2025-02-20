@@ -18,6 +18,7 @@ void allocate_resources() {
 
 void deallocate_resources() {
     free_regexps();
+    free_types();
 }
 
 int main(int argc, char *argv[]) {
@@ -29,9 +30,8 @@ int main(int argc, char *argv[]) {
     allocate_resources();
 
     vec tokenv = tokenize_file(argv[1]);
-
+    // vec_str_print(tokenv);
     generate_ast(tokenv);
-
     free_vec_and_elements(tokenv);
 
     deallocate_resources();

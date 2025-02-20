@@ -6,22 +6,13 @@
 
 #include "pattern.h"
 
-#define MIN_FILENAME_LEN 4
-#define FILE_EXT ".dk"
-
 /**
  * Opens a source code file
  * @param name name of the file
- * @return FILE* for the opened file
+ * @return FILE*: the opened file
  */
 FILE *open_source_file(const char *name) {
-    // validating the file name
-    const size_t len = strlen(name);
-    if (len < MIN_FILENAME_LEN || strcmp(name + len - MIN_FILENAME_LEN + 1, FILE_EXT) != 0) {
-        fprintf(stderr, "Invalid file: %s\n", name);
-        return NULL;
-    }
-
+    // TODO handle open same file twice
     // open the file
     FILE *source_file = fopen(name, "r");
     if (source_file == NULL) {
@@ -35,7 +26,7 @@ FILE *open_source_file(const char *name) {
 /**
  * Gets the size of the file
  * @param file The file to caclualte the size of
- * @return ssize_t size of the file
+ * @return ssize_t: size of the file
  */
 ssize_t get_file_size(FILE *file) {
     // seek to the end of the file
@@ -53,7 +44,7 @@ ssize_t get_file_size(FILE *file) {
 /**
  * Reads in the contents of a source code file
  * @param name name of the file
- * @return char* contents of the file
+ * @return char*: contents of the file
  */
 char *read_source_file(const char *name) {
     // open the file
@@ -92,6 +83,13 @@ char *read_source_file(const char *name) {
     return buffer;
 }
 
+/**
+ *
+ * @param match
+ * @param source_code_cursor
+ * @param tokenv
+ * @return
+ */
 int tokenize(regmatch_t* match, char *source_code_cursor, vec tokenv) {
     while (next_token(source_code_cursor, match)) {
         source_code_cursor += match->rm_so;
@@ -112,6 +110,9 @@ vec tokenize_file(char *filename) {
     vec tokenv = vec_new();
     char *source_file_content = read_source_file(filename);
 
+    char *new_line = malloc(2);
+    strcpy(new_line, "\n");
+    vec_push(tokenv, new_line);
     regmatch_t match[1];
     tokenize(match, source_file_content, tokenv);
 
