@@ -3,12 +3,10 @@
 
 #include "vec.h"
 
-#define MIN_FILENAME_LEN 4
-#define FILE_EXT ".ro"
+#include <stdbool.h>
 
-#define TOKEN_REGEX "\n[ \t]*|[-+*/%|&~^()=]|\\w+"
-#define TOKEN_REGEX_FLAGS (REG_EXTENDED)
+bool valid_symbol(char *symbol);
 
-vec *tokenize_source_code_files(char **filenames);
+vec tokenize_file(char *filename);
 
 #endif //TOKENIZER_H

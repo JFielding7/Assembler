@@ -2,10 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ast.h"
+#include "ast_node.h"
+#include "pattern.h"
 #include "tokenizer.h"
+#include "types.h"
 #include "vec.h"
 
 #define MIN_ARG_COUNT 2
+
+void allocate_resources() {
+    compile_regexps();
+    compile_native_types();
+}
+
+void deallocate_resources() {
+    free_regexps();
+    free_types();
+}
 
 int main(int argc, char *argv[]) {
     if (argc < MIN_ARG_COUNT) {
@@ -13,10 +27,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    vec *tokenv = tokenize_source_code_files(argv + 1);
-    vec_print(tokenv, char*, "%s");
+    allocate_resources();
 
+    vec tokenv = tokenize_file(argv[1]);
+    // vec_str_print(tokenv);
+    generate_ast(tokenv);
     free_vec_and_elements(tokenv);
+
+    deallocate_resources();
 
     return 0;
 }

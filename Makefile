@@ -1,5 +1,5 @@
 all *.c *.h:
-	gcc *.c -o compiler
+	gcc -Wall *.c -o compiler
 
 run:
 	gcc *.c -o compiler

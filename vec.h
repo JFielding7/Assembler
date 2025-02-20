@@ -1,46 +1,41 @@
 #ifndef VEC_H
 #define VEC_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
-#define INITIAL_CAPACITY 16
-
-#define new_vec(type) (vec_alloc(sizeof(type)))
-
-#define vec_get(v, type, i) (((type*) (v->buffer))[i])
-
-#define vec_add(v, type, e) { \
-    type element##__COUNTER__ = e; \
-    vec_append(v, &element##__COUNTER__); \
+#define vec_iter(e, v, closure) \
+for (size_t i = 0; i < vec_len(v); i++) { \
+    e = vec_get(v, i); \
+    closure; \
 }
 
-#define vec_print(v, type, format) { \
-    printf("["); \
-    if (v->len > 0) { \
-        for (size_t i = 0; i < v->len - 1; i++) { \
-            printf(format, ((type*) v->buffer)[i]); \
-            printf(", "); \
-        } \
-        if (v->len > 0) { \
-            printf(format, ((type*) v->buffer)[v->len - 1]); \
-        } \
-    } \
-    printf("]\n"); \
-}
+#define vec_push_val(v, e) vec_push(v, (void*) e)
 
-typedef struct vec_s {
-    void *buffer;
-    size_t len;
-    size_t capacity;
-    size_t element_size;
-} vec;
+#define vec_pop_val(v, type) ((type) vec_pop(v))
 
-vec *vec_alloc(size_t element_size);
+typedef struct vec_s* vec;
 
-void vec_append(vec *v, void *element);
+vec vec_new();
 
-void vec_free(vec *v);
+size_t vec_len(vec v);
 
-void free_vec_and_elements(vec *v);
+void *vec_get(vec v, size_t i);
+
+void vec_set(vec v, size_t i, void *element);
+
+void vec_push(vec v, void *element);
+
+void *vec_pop(vec v);
+
+void *vec_peek_end(vec v);
+
+bool vec_conatins(vec v, void *element, int (*cmp)(void*, void*));
+
+void vec_str_print(vec v);
+
+void vec_free(vec v);
+
+void free_vec_and_elements(vec v);
 
 #endif //VEC_H

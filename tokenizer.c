@@ -1,22 +1,18 @@
+#include "tokenizer.h"
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "tokenizer.h"
+
+#include "pattern.h"
 
 /**
  * Opens a source code file
  * @param name name of the file
- * @return FILE* for the opened file
+ * @return FILE*: the opened file
  */
 FILE *open_source_file(const char *name) {
-    // validating the file name
-    const size_t len = strlen(name);
-    if (len < MIN_FILENAME_LEN || strcmp(name + len - MIN_FILENAME_LEN + 1, FILE_EXT) != 0) {
-        fprintf(stderr, "Invalid file: %s\n", name);
-        return NULL;
-    }
-
+    // TODO handle open same file twice
     // open the file
     FILE *source_file = fopen(name, "r");
     if (source_file == NULL) {
@@ -30,7 +26,7 @@ FILE *open_source_file(const char *name) {
 /**
  * Gets the size of the file
  * @param file The file to caclualte the size of
- * @return ssize_t size of the file
+ * @return ssize_t: size of the file
  */
 ssize_t get_file_size(FILE *file) {
     // seek to the end of the file
@@ -48,7 +44,7 @@ ssize_t get_file_size(FILE *file) {
 /**
  * Reads in the contents of a source code file
  * @param name name of the file
- * @return char* contents of the file
+ * @return char*: contents of the file
  */
 char *read_source_file(const char *name) {
     // open the file
@@ -87,57 +83,40 @@ char *read_source_file(const char *name) {
     return buffer;
 }
 
-int tokenize(regex_t *regex, regmatch_t* match, char *source_code_cursor, vec *tokenv) {
-    while (regexec(regex, source_code_cursor, 1, match, 0) == 0) {
+/**
+ *
+ * @param match
+ * @param source_code_cursor
+ * @param tokenv
+ * @return
+ */
+int tokenize(regmatch_t* match, char *source_code_cursor, vec tokenv) {
+    while (next_token(source_code_cursor, match)) {
         source_code_cursor += match->rm_so;
 
         size_t token_len = match->rm_eo - match->rm_so;
         char* token = malloc(token_len + 1);
         strncpy(token, source_code_cursor, token_len);
         token[token_len] = '\0';
-        printf("%s %lu\n", token, token_len);
 
-        vec_add(tokenv, char*, token);
+        vec_push(tokenv, token);
         source_code_cursor += token_len;
     }
 
     return 0;
 }
 
-/**
- *
- * @param files
- * @return
- */
-vec *tokenize_source_code_files(char **filenames) {
-    regex_t regex;
-    const int ret = regcomp(&regex, TOKEN_REGEX, TOKEN_REGEX_FLAGS);
-    if (ret != 0) {
-        perror("Failed to compile token regex\n");
-        return NULL;
-    }
+vec tokenize_file(char *filename) {
+    vec tokenv = vec_new();
+    char *source_file_content = read_source_file(filename);
 
-    vec *tokenv = new_vec(char*);
-    for (char **source_file = filenames; *source_file != NULL; source_file++) {
-        char *source_file_content = read_source_file(*source_file);
-        if (source_file_content == NULL) {
-            free_vec_and_elements(tokenv);
-            regfree(&regex);
-            return NULL;
-        }
+    char *new_line = malloc(2);
+    strcpy(new_line, "\n");
+    vec_push(tokenv, new_line);
+    regmatch_t match[1];
+    tokenize(match, source_file_content, tokenv);
 
-        char *new_line = malloc(2);
-        new_line[0] = '\n';
-        new_line[1] = '\0';
-        vec_add(tokenv, char*, new_line);
-
-        regmatch_t match[1];
-        tokenize(&regex, match, source_file_content, tokenv);
-
-        free(source_file_content);
-    }
-
-    regfree(&regex);
+    free(source_file_content);
 
     return tokenv;
 }
