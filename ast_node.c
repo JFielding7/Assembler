@@ -8,7 +8,7 @@
 #include "pattern.h"
 #include "util.h"
 
-#define NUM_BINARY_OPERATORS 2
+#define NUM_BINARY_OPERATORS 6
 
 void function_print(ast_node *node, size_t level);
 void var_print(ast_node *node, size_t _);
@@ -16,7 +16,7 @@ void literal_print(ast_node *node, size_t _);
 void binary_operation_print(ast_node *node, size_t level);
 void ast_node_print(ast_node *node, size_t level);
 
-ast_node *ast_node_new(type *expr_type, void *node, void (*generate_assembly)(void*),
+ast_node *ast_node_new(type *expr_type, void *node, void (*generate_assembly)(ast_node*),
     void (*free_func)(ast_node*), void (*print)(ast_node*, size_t)) {
 
     ast_node *n = malloc(sizeof(ast_node));
@@ -47,6 +47,8 @@ void init_namespace(namespace *ns) {
 }
 
 ast_node *var_lookup(namespace *ns, char *name) {
+    printf("%lu\n", vec_len(ns->vars));
+
     while (ns != NULL) {
         vec_iter(ast_node *curr_var, ns->vars, {
             if (strcmp(name, curr_var->node) == 0) {
@@ -89,7 +91,7 @@ ast_node *literal_node_new(type *literal_type, char *value) {
     return ast_node_new(literal_type, value, &literal_assembly, NULL, &literal_print);
 }
 
-ast_node *binary_operation_new(type *operation_type, ast_node *left, ast_node *right, void (*generate_assembly)(void*)) {
+ast_node *binary_operation_new(type *operation_type, ast_node *left, ast_node *right, void (*generate_assembly)(ast_node*)) {
     binary_operation_node *node = malloc(sizeof(binary_operation_node));
     node->left = left;
     node->right = right;
@@ -125,10 +127,14 @@ void literal_print(ast_node *node, size_t _) {
 void binary_operation_print(ast_node *node, size_t level) {
     void *assembly_functions[NUM_BINARY_OPERATORS << 1] = {
         &assignment_assembly, "=",
+        &mul_assembly, "*",
+        &div_assembly, "/",
+        &mod_assembly, "%",
         &add_assembly, "+",
+        &sub_assembly, "-",
     };
 
-    void (*assembly)(void*) = node->generate_assembly;
+    void (*assembly)(ast_node*) = node->generate_assembly;
     for (size_t i = 0; i < NUM_BINARY_OPERATORS << 1; i+=2) {
         if (assembly == assembly_functions[i]) {
             puts(assembly_functions[i + 1]);
@@ -147,11 +153,11 @@ void binary_operation_print(ast_node *node, size_t level) {
  * @param level current depth level in the ast tree
  */
 void ast_node_print(ast_node *node, size_t level) {
-    char *dash = "- ";
-    char indent_str[level + strlen(dash) + 1];
-    memset(indent_str, ' ', level);
-    strcpy(indent_str + level, dash);
-    printf("%s", indent_str);
+    size_t indent_spaces = level << 1;
+    char indent_str[indent_spaces + 1];
+    indent_str[indent_spaces] = '\0';
+    memset(indent_str, ' ', indent_spaces);
+    printf("%s%s", indent_str, "└-> ");
 
     (*node->print)(node, level);
 }

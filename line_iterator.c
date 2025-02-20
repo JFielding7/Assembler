@@ -9,6 +9,7 @@
 #define TAB '\t'
 #define TAB_SHIFT 2
 #define TAB_WIDTH (1 << TAB_SHIFT)
+#define SUSPICIOUS_INDENT -1
 
 void init_line_iterator(line_iterator *iter, char *filename, vec tokenv) {
     iter->curr_line.start = 0;

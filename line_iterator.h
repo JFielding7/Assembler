@@ -3,8 +3,6 @@
 
 #include "vec.h"
 
-#define SUSPICIOUS_INDENT -1
-
 typedef struct line_s {
     size_t line_num;
     size_t start;

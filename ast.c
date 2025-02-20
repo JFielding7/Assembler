@@ -122,6 +122,9 @@ static ast_node *create_ast_node(vec tokenv, line *curr_line, vec namespaces) {
         return symbol_definition(tokenv, symbol_type, curr_line, namespaces);
     }
 
+    puts("Parsing");
+    namespace *ns = vec_get(namespaces, 0);
+    printf("len: %lu\n", vec_len(ns->vars));
     return parse_expression(tokenv, curr_line, curr_line->start, curr_line->end, vec_peek_end(namespaces));
 }
 
@@ -139,10 +142,16 @@ ast_node *generate_ast(char *filename, vec tokenv) {
 
     line *curr_line = next_line(&iter);
     while (curr_line != NULL) {
-        if (curr_line->start + 1 < curr_line->end) {
+
+        if (vec_len(namespaces) > 0) {
+            namespace *ns = vec_get(namespaces, 0);
+            printf("curr len: %lu\n", vec_len(ns->vars));
+        }
+
+        if (curr_line->start < curr_line->end) {
             ast_node *node = create_ast_node(tokenv, curr_line, namespaces);
+            puts("Node:");
             ast_tree_print(node);
-            node->free_func(node);
         }
         curr_line = next_line(&iter);
     }
