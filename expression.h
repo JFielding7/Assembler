@@ -1,6 +1,8 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
 
-ast_node *parse_expression(vec tokenv, size_t start, size_t end, size_t line_num, namespace *ns);
+#include "line_iterator.h"
+
+ast_node *parse_expression(vec tokenv, line *curr_line, size_t start, size_t end, namespace *ns);
 
 #endif //EXPRESSION_H

@@ -5,14 +5,22 @@
 
 void generate_assembly(ast_node *);
 
-void function_assembly(void *);
+void function_assembly(ast_node*);
 
-void assignment_assembly(void *);
+void assignment_assembly(ast_node*);
 
-void add_assembly(void *);
+void mul_assembly(ast_node*);
 
-void load_assembly(void *);
+void div_assembly(ast_node*);
 
-void literal_assembly(void *);
+void mod_assembly(ast_node*);
+
+void add_assembly(ast_node*);
+
+void sub_assembly(ast_node*);
+
+void load_assembly(ast_node*);
+
+void literal_assembly(ast_node*);
 
 #endif //ASSEMBLY_GENERATOR_H

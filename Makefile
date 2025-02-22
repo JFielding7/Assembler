@@ -1,17 +1,20 @@
+CC = gcc
+CFLAGS = -Wall -O3
+
 all *.c *.h:
-	gcc -Wall *.c -o compiler
+	$(CC) $(CFLAGS) *.c -o compiler
 
 run:
-	gcc *.c -o compiler
+	$(CC) $(CFLAGS) *.c -o compiler
 	./compiler
 
 test:
-	gcc *.c -o compiler
+	$(CC) $(CFLAGS) *.c -o compiler
 	./compiler test.ro
 
 mem_check:
-	gcc *.c -o compiler
-	valgrind --leak-check=full ./compiler test.ro
+	$(CC) $(CFLAGS) *.c -o compiler
+	valgrind --leak-check=full ./compiler test.dk
 
 clean:
 	rm -f compiler
